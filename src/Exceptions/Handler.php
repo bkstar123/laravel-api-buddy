@@ -75,7 +75,7 @@ class Handler extends ExceptionHandler
      * @param  \Exception  $exception
      * @return \Illuminate\Http\Response
      */
-    public function handleException($request, Exception $exception)
+    protected function handleException($request, Exception $exception)
     {
         if (is_null($request->route()) || $this->isWebAccess($request)) {
             return $this->webHandleException();
@@ -96,7 +96,7 @@ class Handler extends ExceptionHandler
         $errors = $exception->validator->errors()->getMessages();
 
         if ($this->isWebAccess($request)) {
-            return $request->ajax() ?
+            return $request->expectsJson() ?
                    $this->errorResponse($errors, 422) :
                    redirect()->back()
                              ->withInput($request->except($this->dontFlash))
@@ -116,7 +116,9 @@ class Handler extends ExceptionHandler
     protected function unauthenticated($request, AuthenticationException $exception)
     {
         if ($this->isWebAccess($request)) {
-            return redirect()->guest($exception->redirectTo() ?? route('login'));
+            return $request->expectsJson() ?
+                   $this->errorResponse($exception->getMessage(), 401) :
+                   redirect()->guest($exception->redirectTo() ?? route('login'));
         }
 
         return $this->errorResponse($exception->getMessage(), 401);
@@ -128,7 +130,7 @@ class Handler extends ExceptionHandler
      * @param  \Illuminate\Http\Request  $request
      * @return bool
      */
-    private function isWebAccess($request) : bool
+    protected function isWebAccess($request) : bool
     {
         return $request->acceptsHtml() && collect($request->route()->middleware())->contains('web');
     }
