@@ -32,7 +32,9 @@ class ApiBuddyServiceProvider extends ServiceProvider
             ]);
         }
 
-        $this->app->singleton(ExceptionHandler::class, Handler::class);
+        if (config('bkstar123_apibuddy.replace_exceptionhandler')) {
+            $this->app->singleton(ExceptionHandler::class, Handler::class);
+        }
     }
 
     /**

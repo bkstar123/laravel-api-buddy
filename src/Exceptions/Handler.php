@@ -9,21 +9,16 @@ namespace Bkstar123\ApiBuddy\Exceptions;
 
 use Exception;
 use Asm89\Stack\CorsService;
-use Illuminate\Database\QueryException;
 use Bkstar123\ApiBuddy\Traits\ApiResponser;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use Bkstar123\ApiBuddy\Exceptions\ApiExceptionHandler;
+use Bkstar123\ApiBuddy\Exceptions\WebExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 class Handler extends ExceptionHandler
 {
-    use ApiResponser;
+    use ApiResponser, ApiExceptionHandler, WebExceptionHandler;
 
     /**
      * A list of the exception types that are not reported.
@@ -82,58 +77,11 @@ class Handler extends ExceptionHandler
      */
     public function handleException($request, Exception $exception)
     {
-        if (is_null($request->route()) || $this->isFrontend($request)) {
-            return parent::render($request, $exception);
+        if (is_null($request->route()) || $this->isWebAccess($request)) {
+            return $this->webHandleException();
         }
 
-        if ($exception instanceof ValidationException) {
-            return $this->convertValidationExceptionToResponse($exception, $request);
-        }
-
-        if ($exception instanceof ModelNotFoundException) {
-            $modelName = strtolower(class_basename($exception->getModel()));
-            return $this->errorResponse("Does not exist any {$modelName} with the specified identificator", 404);
-        }
-
-        if ($exception instanceof AuthenticationException) {
-            return $this->unauthenticated($request, $exception);
-        }
-
-        if ($exception instanceof AuthorizationException) {
-            return $this->errorResponse($exception->getMessage(), 403);
-        }
-
-        if ($exception instanceof NotFoundHttpException) {
-            return $this->errorResponse('The specified url cannot be found', 404);
-        }
-
-        if ($exception instanceof MethodNotAllowedHttpException) {
-            return $this->errorResponse('The specified method for the request is invalid', 405);
-        }
-
-        if ($exception instanceof HttpException) {
-            return $this->errorResponse($exception->getMessage(), $exception->getStatusCode());
-        }
-
-        if ($exception instanceof QueryException) {
-            $errorCode = $exception->errorInfo[1];
-            if ($errorCode == 1451) {
-                return $this->errorResponse('Cannot remove this resource permanently, it is related with an another resource', 409);
-            } else if ($errorCode == 1062) {
-                return $this->errorResponse('Cannot create this resource as it is duplicated with an existing one', 409);
-            }
-            return $this->errorResponse('Failed to proceed this request due to an unknown reason', 422);
-        }
-
-        if ($exception instanceof TokenMismatchException) {
-            return redirect()->back()->withInput($request->input());
-        }
-
-        if (config('app.debug')) {
-            return parent::render($request, $exception);
-        }
-        
-        return $this->errorResponse('Unexpected exception. Please try later', 500);
+        return $this->apiHandleException($request, $exception);
     }
 
     /**
@@ -143,13 +91,13 @@ class Handler extends ExceptionHandler
      * @param  \Illuminate\Http\Request  $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    protected function convertValidationExceptionToResponse(ValidationException $e, $request)
+    protected function convertValidationExceptionToResponse(ValidationException $exception, $request)
     {
-        $errors = $e->validator->errors()->getMessages();
+        $errors = $exception->validator->errors()->getMessages();
 
-        if ($this->isFrontend($request)) {
+        if ($this->isWebAccess($request)) {
             return $request->ajax() ?
-                   response()->json($errors, 422) :
+                   $this->errorResponse($errors, 422) :
                    redirect()->back()
                              ->withInput($request->except($this->dontFlash))
                              ->withErrors($errors);
@@ -167,14 +115,20 @@ class Handler extends ExceptionHandler
      */
     protected function unauthenticated($request, AuthenticationException $exception)
     {
-        if ($this->isFrontend($request)) {
-            return redirect()->guest('login');
+        if ($this->isWebAccess($request)) {
+            return redirect()->guest($exception->redirectTo() ?? route('login'));
         }
 
-        return $this->errorResponse("Unauthenticated", 401);
+        return $this->errorResponse($exception->getMessage(), 401);
     }
-
-    private function isFrontend($request)
+    
+    /**
+     * Determine whether a request is via Web or API call
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    private function isWebAccess($request) : bool
     {
         return $request->acceptsHtml() && collect($request->route()->middleware())->contains('web');
     }

@@ -18,10 +18,10 @@ trait ApiResponseProcessor
      * Paginate data by given limit & page
      * Query example: ?limit=X&page=Y
      *
-     * @param \Illuminate\Database\Eloquent\Builder | \Illuminate\Database\Query\Builder  $builder
+     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    protected function paginateData($builder)
+    protected function paginateData($builder) : \Illuminate\Pagination\LengthAwarePaginator
     {
         $this->validateInputFor('paginateData', $builder);
 
@@ -32,19 +32,19 @@ trait ApiResponseProcessor
         Validator::validate(request()->all(), $rules);
 
         if (request()->filled('limit')) {
-            $limit = request()->input('limit');
-            return $builder->paginate($limit)->appends(request()->query());
+            $limit = request()->input('limit');  
         } else {
-            return $builder->get();
+            $limit = config('bkstar123_apibuddy.default_per_page');  
         }
+        return $builder->paginate($limit)->appends(request()->query());
     }
 
     /**
      * Filtering the data by conditions
      * Query example: ?foo=bar&baz=boo
      *
-     * @param \Illuminate\Database\Eloquent\Builder | \Illuminate\Database\Query\Builder  $builder
-     * @return \Illuminate\Database\Eloquent\Builder | \Illuminate\Database\Query\Builder
+     * @param  $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
     protected function filterData($builder)
     {
@@ -65,8 +65,8 @@ trait ApiResponseProcessor
      * Sorting the data by the given single column
      * Query example: ?sort_by=identifier1,-identifier2 where: "-" indicates descending sorting order
      *
-     * @param \Illuminate\Database\Eloquent\Builder | \Illuminate\Database\Query\Builder  $builder
-     * @return \Illuminate\Database\Eloquent\Builder | \Illuminate\Database\Query\Builder
+     * @param  $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  
+     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
     protected function sortData($builder)
     {
@@ -90,8 +90,8 @@ trait ApiResponseProcessor
      * Specify the fields which are to be included in the data
      * Query example: ?fields=field1,field2
      *
-     * @param \Illuminate\Database\Eloquent\Builder | \Illuminate\Database\Query\Builder  $builder
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param   $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
     protected function selectFields($builder)
     {
@@ -110,26 +110,26 @@ trait ApiResponseProcessor
     }
 
     /**
-     * get and parse data with sort, filter, select and paginate
+     * Get resource data and process it with sorting, filtering, selecting and paginating
      *
-     * @param \Illuminate\Database\Eloquent\Builder | \Illuminate\Database\Query\Builder  $builder
-     * @return \Illuminate\Pagination\LengthAwarePaginator
+     * @param  $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @return array
      */
-    protected function getAndParseData($builder)
+    protected function getData($builder) : array
     {
         $builder =  $this->filterData($builder);
         $builder =  $this->sortData($builder);
         $builder = $this->selectFields($builder);
         
-        return $this->paginateData($builder);
+        return $this->paginateData($builder)->toArray();
     }
 
     /**
      * Validate the input for the given function name
      *
-     * @param string $function_name
-     * @param mixed $builder
-     * @return true | Exception
+     * @param  string  $function_name
+     * @param  mixed  $builder
+     * @return true|Exception
      */
     private function validateInputFor($funcion_name, $builder)
     {
