@@ -1,5 +1,5 @@
 # laravel-api-buddy     
-> This lightweight Laravel package provides a toolset for quickly building a high-quality RESTful API with transformation layer, sorting, filtering, paginating and more    
+> This lightweight Laravel package provides a toolset for quickly building a high-quality RESTful API endpoints for model resources with several advanced features such as schema transformation as well as sorting, filtering, paginating and more    
 
 ## 1 Requirements  
 
