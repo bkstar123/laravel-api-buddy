@@ -19,7 +19,7 @@ trait WebExceptionHandler
      * @param  \Illuminate\Http\Request  $request
      * @param  \Exception  $exception
      */
-    private function webHandleException($request, Exception $exception)
+    protected function webHandleException($request, Exception $exception)
     {
         return parent::render($request, $exception);
     }

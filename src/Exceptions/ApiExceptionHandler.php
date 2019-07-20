@@ -27,7 +27,7 @@ trait ApiExceptionHandler
      * @param  \Illuminate\Http\Request  $request
      * @param  \Exception  $exception
      */
-    private function apiHandleException($request, Exception $exception)
+    protected function apiHandleException($request, Exception $exception)
     {
         if ($exception instanceof ValidationException) {
             return $this->convertValidationExceptionToResponse($exception, $request);
