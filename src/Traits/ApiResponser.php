@@ -7,9 +7,31 @@
  */
 namespace Bkstar123\ApiBuddy\Traits;
 
+use Illuminate\Database\Eloquent\Model;
+
 trait ApiResponser
 {
-    
+    /**
+     * Show a collection of resources
+     *
+     * @param \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function showCollection($builder) : \Illuminate\Http\JsonResponse
+    {
+        return $this->successResponse($this->getData($builder));
+    }
+
+    /**
+     * Show a resource instance
+     *
+     * @param \Illuminate\Database\Eloquent\Model  $instance
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function showInstance(Model $instance) : \Illuminate\Http\JsonResponse
+    {
+        return $this->successResponse($instance);
+    }
 
     /**
      * Send error response in JSON format
