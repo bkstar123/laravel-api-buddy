@@ -3,7 +3,7 @@
  * Exception Handler
  *
  * @author: tuanha
- * @last-mod: 21-04-2019
+ * @last-mod: 21-July-2019
  */
 namespace Bkstar123\ApiBuddy\Exceptions;
 
@@ -77,10 +77,9 @@ class Handler extends ExceptionHandler
      */
     protected function handleException($request, Exception $exception)
     {
-        if (is_null($request->route()) || $this->isWebAccess($request)) {
-            return $this->webHandleException();
+        if ($this->isWebRoute($request)) {
+            return $this->webHandleException($request, $exception);
         }
-
         return $this->apiHandleException($request, $exception);
     }
 
@@ -95,7 +94,7 @@ class Handler extends ExceptionHandler
     {
         $errors = $exception->validator->errors()->getMessages();
 
-        if ($this->isWebAccess($request)) {
+        if ($this->isWebRoute($request)) {
             return $request->expectsJson() ?
                    $this->errorResponse($errors, 422) :
                    redirect()->back()
@@ -115,23 +114,28 @@ class Handler extends ExceptionHandler
      */
     protected function unauthenticated($request, AuthenticationException $exception)
     {
-        if ($this->isWebAccess($request)) {
+        if ($this->isWebRoute($request)) {
             return $request->expectsJson() ?
                    $this->errorResponse($exception->getMessage(), 401) :
                    redirect()->guest($exception->redirectTo() ?? route('login'));
         }
-
         return $this->errorResponse($exception->getMessage(), 401);
     }
     
     /**
-     * Determine whether a request is via Web or API call
+     * Determine whether a request is from Web or API routes
      *
      * @param  \Illuminate\Http\Request  $request
      * @return bool
      */
-    protected function isWebAccess($request) : bool
+    protected function isWebRoute($request) : bool
     {
-        return $request->acceptsHtml() && collect($request->route()->middleware())->contains('web');
+        if ($request->acceptsHtml()) {
+            if (! is_null($request->route())) {
+                return collect($request->route()->middleware())->contains('web');
+            }
+            return ! preg_match('/^api\/.*/', $request->path());
+        }
+        return false;
     }
 }

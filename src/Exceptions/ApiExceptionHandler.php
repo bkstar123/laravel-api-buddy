@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 trait ApiExceptionHandler
 {
-	/**
+    /**
      * apiHandleException
      *
      * Handle exceptions for API routes
@@ -29,48 +29,44 @@ trait ApiExceptionHandler
      */
     protected function apiHandleException($request, Exception $exception)
     {
-        if ($exception instanceof ValidationException) {
-            return $this->convertValidationExceptionToResponse($exception, $request);
-        }
-
-        if ($exception instanceof ModelNotFoundException) {
-            $modelName = strtolower(class_basename($exception->getModel()));
-            return $this->errorResponse("Does not exist any {$modelName} with the specified identificator", 404);
-        }
-
-        if ($exception instanceof AuthenticationException) {
-            return $this->unauthenticated($request, $exception);
-        }
-
-        if ($exception instanceof AuthorizationException) {
-            return $this->errorResponse($exception->getMessage(), 403);
-        }
-
-        if ($exception instanceof NotFoundHttpException) {
-            return $this->errorResponse('The specified url cannot be found', 404);
-        }
-
-        if ($exception instanceof MethodNotAllowedHttpException) {
-            return $this->errorResponse('The specified method for the request is invalid', 405);
-        }
-
-        if ($exception instanceof HttpException) {
-            return $this->errorResponse($exception->getMessage(), $exception->getStatusCode());
-        }
-
-        if ($exception instanceof QueryException) {
-            $errorCode = $exception->errorInfo[1];
-            if ($errorCode == 1451) {
-                return $this->errorResponse('Cannot remove this resource permanently, it is related with an another resource', 409);
-            } else if ($errorCode == 1062) {
-                return $this->errorResponse('Cannot create this resource as it is duplicated with an existing one', 409);
-            }
-            return $this->errorResponse('Failed to proceed this request due to an unknown reason', 400);
-        }
-
-        if (config('app.debug')) {
-            return parent::render($request, $exception);
-        }
-        return $this->errorResponse('Unexpected exception. Please try later', 500);
+        switch (true) {
+            case $exception instanceof ValidationException:
+                return $this->convertValidationExceptionToResponse($exception, $request);
+                break;
+            case $exception instanceof AuthenticationException:
+                return $this->unauthenticated($request, $exception);
+                break;
+            case $exception instanceof ModelNotFoundException:
+                $modelName = strtolower(class_basename($exception->getModel()));
+                return $this->errorResponse("There is no {$modelName} of the given identificator", 404);
+                break;
+            case $exception instanceof AuthorizationException:
+                return $this->errorResponse($exception->getMessage(), 403);
+                break;
+            case $exception instanceof NotFoundHttpException:
+                return $this->errorResponse('URL not found', 404);
+                break;
+            case $exception instanceof MethodNotAllowedHttpException:
+                return $this->errorResponse('Invalid request method', 405);
+                break;
+            case $exception instanceof HttpException:
+                return $this->errorResponse($exception->getMessage(), $exception->getStatusCode());
+                break;
+            case $exception instanceof QueryException:
+                $errorCode = $exception->errorInfo[1];
+                if ($errorCode == 1451) {
+                    return $this->errorResponse('The resource cannot be removed due to it is being referenced by others', 409);
+                } else if ($errorCode == 1062) {
+                    return $this->errorResponse('The resource already exists', 409);
+                }
+                return $this->errorResponse('Failed to proceed this request due to an unknown reason', 400);
+                break;
+            default:
+                if (config('app.debug')) {
+                    return parent::render($request, $exception);
+                }
+                return $this->errorResponse('Unexpected exception. Please try later', 500);
+                break;
+        } 
     }
 }
