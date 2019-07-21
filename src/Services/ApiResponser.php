@@ -33,7 +33,7 @@ class ApiResponser implements ApiResponsible
      */
     public function showCollection($builder) : \Illuminate\Http\JsonResponse
     {
-        return $this->successResponse($this->processor->getCollection($builder));
+        return $this->successResponse($this->processor->processCollection($builder));
     }
 
     /**
@@ -42,7 +42,7 @@ class ApiResponser implements ApiResponsible
      */
     public function showInstance(Model $instance) : \Illuminate\Http\JsonResponse
     {
-        return $this->successResponse($instance);
+        return $this->successResponse($this->processor->processInstance($instance));
     }
 
     /**

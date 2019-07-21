@@ -38,7 +38,7 @@ class ResourceCollectionProcessor implements ResourceCollectionProcessable
     }
 
     /**
-     * @param  $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
     public function filterData($builder)
@@ -57,7 +57,7 @@ class ResourceCollectionProcessor implements ResourceCollectionProcessable
     }
 
     /**
-     * @param  $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  
+     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
     public function sortData($builder)
@@ -79,7 +79,7 @@ class ResourceCollectionProcessor implements ResourceCollectionProcessable
     }
 
     /**
-     * @param   $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
     public function selectFields($builder)
@@ -99,16 +99,26 @@ class ResourceCollectionProcessor implements ResourceCollectionProcessable
     }
 
     /**
-     * @param  $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @return array
      */
-    public function getCollection($builder) : array
+    public function processCollection($builder) : array
     {
         $builder =  $this->filterData($builder);
         $builder =  $this->sortData($builder);
         $builder = $this->selectFields($builder);
         
         return $this->paginateData($builder)->toArray();
+    }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Model  $instance
+     * @return array
+     */
+    public function processInstance($instance) : array
+    {
+        $builder = $instance->getQuery();
+        return $this->selectFields($builder)->where('id', $instance->id)->get()->toArray();
     }
 
     /**

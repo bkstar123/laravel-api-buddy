@@ -22,7 +22,7 @@ interface ResourceCollectionProcessable
      * Filtering the data by the given conditions
      * Query example: ?foo=bar&baz=boo
      *
-     * @param  $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
      public function filterData($builder);
@@ -31,7 +31,7 @@ interface ResourceCollectionProcessable
      * Sorting the data by the given columns
      * Query example: ?sort_by=identifier1,-identifier2 where: "-" indicates descending sorting order
      *
-     * @param  $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  
+     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder 
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
      public function sortData($builder);
@@ -40,7 +40,7 @@ interface ResourceCollectionProcessable
      * Specify the fields which are to be included in the returned data
      * Query example: ?fields=field1,field2
      *
-     * @param   $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
      public function selectFields($builder);
@@ -48,8 +48,14 @@ interface ResourceCollectionProcessable
     /**
      * Get resource collection and process it with sorting, filtering, selecting and paginating
      *
-     * @param  $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @return array
      */
-    public function getCollection($builder) : array;
+    public function processCollection($builder) : array;
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Model  $instance
+     * @return array
+     */
+    public function processInstance($instance) : array;
 }
