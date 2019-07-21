@@ -1,6 +1,6 @@
 <?php
 /**
- * ApiResponser.php
+ * ApiResponser Service
  *
  * @author: tuanha
  * @last-mod: 11-July-2019

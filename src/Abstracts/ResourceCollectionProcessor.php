@@ -1,6 +1,6 @@
 <?php
 /**
- * ResourceCollectionProcessor.php
+ * ResourceCollectionProcessor Abstract
  *
  * @author: tuanha
  * @last-mod: 21-July-2019

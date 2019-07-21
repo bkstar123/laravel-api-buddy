@@ -1,6 +1,6 @@
 <?php
 /**
- * PublishConfiguration.php
+ * PublishConfiguration Command
  *
  * This command is to publish all neccessary configuration files for modifying the package's behavior
  *

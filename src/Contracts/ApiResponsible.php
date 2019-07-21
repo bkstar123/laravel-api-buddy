@@ -1,6 +1,6 @@
 <?php
 /**
- * ApiResponsible.php
+ * ApiResponsible Contract
  *
  * @author: tuanha
  * @last-mod: 21-July-2019

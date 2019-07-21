@@ -1,6 +1,6 @@
 <?php
 /**
- * WebExceptionHandler.php
+ * WebExceptionHandler Trait
  *
  * Handle exceptions for Web routes
  * @author: tuanha

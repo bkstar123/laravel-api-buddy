@@ -1,6 +1,6 @@
 <?php
 /**
- * ApiExceptionHandler.php
+ * ApiExceptionHandler Trait
  *
  * Handle exceptions for API routes
  * @author: tuanha

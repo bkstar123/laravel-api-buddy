@@ -1,6 +1,6 @@
 <?php
 /**
- * ApiController.php
+ * ApiController Controller
  *
  * @author: tuanha
  * @last-mod: 11-July-2019

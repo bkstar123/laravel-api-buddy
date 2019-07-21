@@ -1,6 +1,6 @@
 <?php
 /**
- * ResourceCollectionProcessable.php
+ * ResourceCollectionProcessable Contract
  *
  * @author: tuanha
  * @last-mod: 21-July-2019
