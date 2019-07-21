@@ -16,6 +16,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Foundation\Http\Exceptions\MaintenanceModeException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 trait ApiExceptionHandler
@@ -35,6 +36,9 @@ trait ApiExceptionHandler
                 break;
             case $exception instanceof AuthenticationException:
                 return $this->unauthenticated($request, $exception);
+                break;
+            case $exception instanceof MaintenanceModeException:
+                return $this->apiResponser->errorResponse('Maintenance', $exception->getStatusCode());
                 break;
             case $exception instanceof ModelNotFoundException:
                 $modelName = strtolower(class_basename($exception->getModel()));
@@ -59,7 +63,7 @@ trait ApiExceptionHandler
                 } else if ($errorCode == 1062) {
                     return $this->apiResponser->errorResponse('The resource already exists', 409);
                 }
-                return $this->apiResponser->errorResponse('Failed to proceed this request due to an unknown reason', 400);
+                return $this->apiResponser->errorResponse('Bad request, please check the request syntax', 400);
                 break;
             default:
                 if (config('app.debug')) {

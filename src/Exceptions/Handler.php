@@ -149,7 +149,7 @@ class Handler extends ExceptionHandler
             if (! is_null($request->route())) {
                 return collect($request->route()->middleware())->contains('web');
             }
-            return ! preg_match('/^api\/.*/', $request->path());
+            return ! (preg_match('/^api\/.*/', $request->path()) === 1);
         }
         return false;
     }

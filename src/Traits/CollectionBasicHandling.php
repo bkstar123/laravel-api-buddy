@@ -40,10 +40,26 @@ trait CollectionBasicHandling
     public function filterData($builder)
     {
         $this->validateInputFor('filterData', $builder);
+        $validOpKeys = ['gt', 'gte', 'lt', 'lte', 'neq'];
+        $opMapping = [
+            'gt' => '>',
+            'gte' => '>=',
+            'lt' => '<',
+            'lte' => '<=',
+            'neq' => '<>',
+            'eq' => '='
+        ];
         foreach (request()->query() as $query => $value) {
             if ($query != 'sort_by' && $query != 'limit' && $query != 'fields' && $query != 'page') {
                 if (isset($query, $value)) {
-                    $builder = $builder->where($query, $value);
+                    $opKey = 'eq';
+                    if (preg_match('/(.+)\{(.+)\}$/', $query, $matches) === 1) {
+                        if (in_array($matches[2], $validOpKeys)) {
+                            $opKey = $matches[2];
+                        } 
+                        $query = $matches[1];
+                    }
+                    $builder = $builder->where($query, $opMapping[$opKey], $value);
                 }
             }
         }
