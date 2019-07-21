@@ -41,7 +41,7 @@ class Handler extends ExceptionHandler
     ];
 
     /**
-     * @var \Bkstar123\ApiBuddy\Contracts\ApiResponsible 
+     * @var \Bkstar123\ApiBuddy\Contracts\ApiResponsible
      */
     protected $apiResponser;
 

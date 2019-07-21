@@ -11,7 +11,7 @@ use Bkstar123\ApiBuddy\Contracts\ResourceCollectionProcessable;
 
 abstract class ResourceCollectionProcessor implements ResourceCollectionProcessable
 {
-	/**
+    /**
      * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @return array
      */

@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 trait CollectionBasicHandling
 {
-	/**
+    /**
      * @param  \EloquentBuilder|\QueryBuilder  $builder
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
@@ -26,9 +26,9 @@ trait CollectionBasicHandling
         ];
         Validator::validate(request()->all(), $rules);
         if (request()->filled('limit')) {
-            $limit = request()->input('limit');  
+            $limit = request()->input('limit');
         } else {
-            $limit = config('bkstar123_apibuddy.default_per_page');  
+            $limit = config('bkstar123_apibuddy.default_per_page');
         }
         return $builder->paginate($limit)->appends(request()->query());
     }
@@ -56,7 +56,7 @@ trait CollectionBasicHandling
                     if (preg_match('/(.+)\{(.+)\}$/', $query, $matches) === 1) {
                         if (in_array($matches[2], $validOpKeys)) {
                             $opKey = $matches[2];
-                        } 
+                        }
                         $query = $matches[1];
                     }
                     $builder = $builder->where($query, $opMapping[$opKey], $value);
@@ -75,7 +75,7 @@ trait CollectionBasicHandling
         $this->validateInputFor('sortData', $builder);
         if (request()->filled('sort_by')) {
             $sortCols = request()->input('sort_by');
-            $sortCols = explode(',', $sortCols);            
+            $sortCols = explode(',', $sortCols);
             foreach ($sortCols as $sortCol) {
                 $order = starts_with($sortCol, '-') ? 'desc' : 'asc';
                 $sortCol = ltrim($sortCol, '-');
@@ -94,11 +94,11 @@ trait CollectionBasicHandling
         $this->validateInputFor('selectFields', $builder);
         if (request()->filled('fields')) {
             $fields = request()->input('fields');
-            $fields = explode(',', $fields);            
+            $fields = explode(',', $fields);
             foreach ($fields as $field) {
                 $builder = $builder->addSelect(trim($field));
             }
-        }        
+        }
         return $builder;
     }
 

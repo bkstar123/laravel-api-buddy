@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 interface ApiResponsible
 {
-	/**
+    /**
      * Show a collection of resources
      *
      * @param \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
@@ -31,7 +31,7 @@ interface ApiResponsible
      * Send error response in JSON format
      *
      * @param  mixed  $errors
-     * @param  int  $status  
+     * @param  int  $status
      * @return \Illuminate\Http\JsonResponse
      */
     public function errorResponse($errors, int $status = 500) : \Illuminate\Http\JsonResponse;

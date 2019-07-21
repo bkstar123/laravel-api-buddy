@@ -47,7 +47,7 @@ class ApiResponser implements ApiResponsible
 
     /**
      * @param  mixed  $errors
-     * @param  int  $status  
+     * @param  int  $status
      * @return \Illuminate\Http\JsonResponse
      */
     public function errorResponse($errors, int $status = 500) : \Illuminate\Http\JsonResponse

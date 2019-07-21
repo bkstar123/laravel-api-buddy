@@ -12,7 +12,7 @@ use Exception;
 
 trait WebExceptionHandler
 {
-	/**
+    /**
      * webHandleException
      *
      * Handle exceptions for Web routes

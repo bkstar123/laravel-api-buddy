@@ -60,7 +60,7 @@ trait ApiExceptionHandler
                 $errorCode = $exception->errorInfo[1];
                 if ($errorCode == 1451) {
                     return $this->apiResponser->errorResponse('The resource cannot be removed due to it is being referenced by others', 409);
-                } else if ($errorCode == 1062) {
+                } elseif ($errorCode == 1062) {
                     return $this->apiResponser->errorResponse('The resource already exists', 409);
                 }
                 return $this->apiResponser->errorResponse('Bad request, please check the request syntax', 400);
@@ -71,6 +71,6 @@ trait ApiExceptionHandler
                 }
                 return $this->apiResponser->errorResponse('Unexpected exception. Please try later', 500);
                 break;
-        } 
+        }
     }
 }
