@@ -9,26 +9,26 @@ namespace Bkstar123\ApiBuddy\Http\Controllers;
 
 use Bkstar123\ApiBuddy\Traits\ApiResponser;
 use Illuminate\Foundation\Bus\DispatchesJobs;
+use Bkstar123\ApiBuddy\Contracts\ApiResponsible;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Bkstar123\ApiBuddy\Contracts\ResourceCollectionProcessable;
 
 class ApiController extends BaseController
 {
-    use ApiResponser, AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     /**
-     * @var \Bkstar123\ApiBuddy\Contracts\ResourceCollectionProcessable
+     * @var \Bkstar123\ApiBuddy\Contracts\ApiResponsible
      */
-    protected $processor;
+    protected $apiResponser;
 
     /**
-     * @param  \Bkstar123\ApiBuddy\Contracts\ApiResponseProcessor  $processor
+     * @param  \Bkstar123\ApiBuddy\Contracts\ApiResponsible  $apiResponser
      * @return void
      */
-    public function __construct(ResourceCollectionProcessable $processor)
+    public function __construct(ApiResponsible $apiResponser)
     {
-        $this->processor = $processor;
+        $this->apiResponser = $apiResponser;
     }
 }

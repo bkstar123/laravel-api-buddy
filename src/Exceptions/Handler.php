@@ -9,16 +9,17 @@ namespace Bkstar123\ApiBuddy\Exceptions;
 
 use Exception;
 use Asm89\Stack\CorsService;
-use Bkstar123\ApiBuddy\Traits\ApiResponser;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Validation\ValidationException;
+use Bkstar123\ApiBuddy\Contracts\ApiResponsible;
 use Bkstar123\ApiBuddy\Exceptions\ApiExceptionHandler;
 use Bkstar123\ApiBuddy\Exceptions\WebExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
 class Handler extends ExceptionHandler
 {
-    use ApiResponser, ApiExceptionHandler, WebExceptionHandler;
+    use ApiExceptionHandler, WebExceptionHandler;
 
     /**
      * A list of the exception types that are not reported.
@@ -38,6 +39,15 @@ class Handler extends ExceptionHandler
         'password',
         'password_confirmation',
     ];
+
+    protected $apiResponser;
+
+    public function __construct(ApiResponsible $apiResponser)
+    {
+        parent::__construct(app(Container::class));
+
+        $this->apiResponser = $apiResponser;
+    }
 
     /**
      * Report or log an exception.
@@ -96,13 +106,13 @@ class Handler extends ExceptionHandler
 
         if ($this->isWebRoute($request)) {
             return $request->expectsJson() ?
-                   $this->errorResponse($errors, 422) :
+                   $this->apiResponser->errorResponse($errors, 422) :
                    redirect()->back()
                              ->withInput($request->except($this->dontFlash))
                              ->withErrors($errors);
         }
 
-        return $this->errorResponse($errors, 422);
+        return $this->apiResponser->errorResponse($errors, 422);
     }
 
     /**
@@ -116,10 +126,10 @@ class Handler extends ExceptionHandler
     {
         if ($this->isWebRoute($request)) {
             return $request->expectsJson() ?
-                   $this->errorResponse($exception->getMessage(), 401) :
+                   $this->apiResponser->errorResponse($exception->getMessage(), 401) :
                    redirect()->guest($exception->redirectTo() ?? route('login'));
         }
-        return $this->errorResponse($exception->getMessage(), 401);
+        return $this->apiResponser->errorResponse($exception->getMessage(), 401);
     }
     
     /**

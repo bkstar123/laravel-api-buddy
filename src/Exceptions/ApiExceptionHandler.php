@@ -38,34 +38,34 @@ trait ApiExceptionHandler
                 break;
             case $exception instanceof ModelNotFoundException:
                 $modelName = strtolower(class_basename($exception->getModel()));
-                return $this->errorResponse("There is no {$modelName} of the given identificator", 404);
+                return $this->apiResponser->errorResponse("There is no {$modelName} of the given identificator", 404);
                 break;
             case $exception instanceof AuthorizationException:
-                return $this->errorResponse($exception->getMessage(), 403);
+                return $this->apiResponser->errorResponse($exception->getMessage(), 403);
                 break;
             case $exception instanceof NotFoundHttpException:
-                return $this->errorResponse('URL not found', 404);
+                return $this->apiResponser->errorResponse('URL not found', 404);
                 break;
             case $exception instanceof MethodNotAllowedHttpException:
-                return $this->errorResponse('Invalid request method', 405);
+                return $this->apiResponser->errorResponse('Invalid request method', 405);
                 break;
             case $exception instanceof HttpException:
-                return $this->errorResponse($exception->getMessage(), $exception->getStatusCode());
+                return $this->apiResponser->errorResponse($exception->getMessage(), $exception->getStatusCode());
                 break;
             case $exception instanceof QueryException:
                 $errorCode = $exception->errorInfo[1];
                 if ($errorCode == 1451) {
-                    return $this->errorResponse('The resource cannot be removed due to it is being referenced by others', 409);
+                    return $this->apiResponser->errorResponse('The resource cannot be removed due to it is being referenced by others', 409);
                 } else if ($errorCode == 1062) {
-                    return $this->errorResponse('The resource already exists', 409);
+                    return $this->apiResponser->errorResponse('The resource already exists', 409);
                 }
-                return $this->errorResponse('Failed to proceed this request due to an unknown reason', 400);
+                return $this->apiResponser->errorResponse('Failed to proceed this request due to an unknown reason', 400);
                 break;
             default:
                 if (config('app.debug')) {
                     return parent::render($request, $exception);
                 }
-                return $this->errorResponse('Unexpected exception. Please try later', 500);
+                return $this->apiResponser->errorResponse('Unexpected exception. Please try later', 500);
                 break;
         } 
     }

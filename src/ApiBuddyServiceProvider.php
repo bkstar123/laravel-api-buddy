@@ -10,6 +10,8 @@ namespace Bkstar123\ApiBuddy;
 
 use Illuminate\Support\ServiceProvider;
 use Bkstar123\ApiBuddy\Exceptions\Handler;
+use Bkstar123\ApiBuddy\Services\ApiResponser;
+use Bkstar123\ApiBuddy\Contracts\ApiResponsible;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Bkstar123\ApiBuddy\Services\ResourceCollectionProcessor;
 use Bkstar123\ApiBuddy\Console\Commands\PublishConfiguration;
@@ -48,5 +50,6 @@ class ApiBuddyServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/Config/bkstar123_apibuddy.php', 'bkstar123_apibuddy');
         $this->app->singleton(ResourceCollectionProcessable::class, ResourceCollectionProcessor::class);
+        $this->app->singleton(ApiResponsible::class, ApiResponser::class);
     }
 }
