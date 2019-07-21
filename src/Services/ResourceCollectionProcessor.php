@@ -5,23 +5,21 @@
  * @author: tuanha
  * @last-mod: 11-July-2019
  */
-namespace Bkstar123\ApiBuddy\Traits;
+namespace Bkstar123\ApiBuddy\Services;
 
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Bkstar123\ApiBuddy\Contracts\ResourceCollectionProcessable;
 
-trait ApiResponseProcessor
+class ResourceCollectionProcessor implements ResourceCollectionProcessable
 {
     /**
-     * Paginate data by given limit & page
-     * Query example: ?limit=X&page=Y
-     *
      * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    protected function paginateData($builder) : \Illuminate\Pagination\LengthAwarePaginator
+    public function paginateData($builder) : \Illuminate\Pagination\LengthAwarePaginator
     {
         $this->validateInputFor('paginateData', $builder);
 
@@ -40,13 +38,10 @@ trait ApiResponseProcessor
     }
 
     /**
-     * Filtering the data by conditions
-     * Query example: ?foo=bar&baz=boo
-     *
      * @param  $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
-    protected function filterData($builder)
+    public function filterData($builder)
     {
         $this->validateInputFor('filterData', $builder);
 
@@ -62,13 +57,10 @@ trait ApiResponseProcessor
     }
 
     /**
-     * Sorting the data by the given single column
-     * Query example: ?sort_by=identifier1,-identifier2 where: "-" indicates descending sorting order
-     *
      * @param  $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
-    protected function sortData($builder)
+    public function sortData($builder)
     {
         $this->validateInputFor('sortData', $builder);
 
@@ -87,13 +79,10 @@ trait ApiResponseProcessor
     }
 
     /**
-     * Specify the fields which are to be included in the data
-     * Query example: ?fields=field1,field2
-     *
      * @param   $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
-    protected function selectFields($builder)
+    public function selectFields($builder)
     {
         $this->validateInputFor('selectFields', $builder);
 
@@ -110,12 +99,10 @@ trait ApiResponseProcessor
     }
 
     /**
-     * Get resource data and process it with sorting, filtering, selecting and paginating
-     *
      * @param  $builder  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      * @return array
      */
-    protected function getData($builder) : array
+    public function getCollection($builder) : array
     {
         $builder =  $this->filterData($builder);
         $builder =  $this->sortData($builder);

@@ -19,7 +19,7 @@ trait ApiResponser
      */
     protected function showCollection($builder) : \Illuminate\Http\JsonResponse
     {
-        return $this->successResponse($this->getData($builder));
+        return $this->successResponse($this->processor->getCollection($builder));
     }
 
     /**
