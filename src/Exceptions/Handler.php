@@ -51,7 +51,6 @@ class Handler extends ExceptionHandler
     public function __construct(ApiResponsible $apiResponser)
     {
         parent::__construct(app(Container::class));
-
         $this->apiResponser = $apiResponser;
     }
 

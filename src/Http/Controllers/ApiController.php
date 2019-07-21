@@ -7,7 +7,6 @@
  */
 namespace Bkstar123\ApiBuddy\Http\Controllers;
 
-use Bkstar123\ApiBuddy\Traits\ApiResponser;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Bkstar123\ApiBuddy\Contracts\ApiResponsible;
 use Illuminate\Routing\Controller as BaseController;
