@@ -40,8 +40,14 @@ class Handler extends ExceptionHandler
         'password_confirmation',
     ];
 
+    /**
+     * @var \Bkstar123\ApiBuddy\Contracts\ApiResponsible 
+     */
     protected $apiResponser;
 
+    /**
+     * @param  \Bkstar123\ApiBuddy\Contracts\ApiResponsible  $apiResponser
+     */
     public function __construct(ApiResponsible $apiResponser)
     {
         parent::__construct(app(Container::class));
