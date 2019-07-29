@@ -7,15 +7,22 @@
  */
 
 return [
-	// API response caching time in seconds
-    'cache_duration' => env('API_BUDDY_CACHE_DURATION', 30), 
+    // API response caching time in seconds
+    'cache_duration' => env('API_BUDDY_CACHE_DURATION', 30),
 
     // max per_page that user can specify
-    'max_per_page' => env('API_BUDDY_MAX_PER_PAGE', 1000), 
+    'max_per_page' => env('API_BUDDY_MAX_PER_PAGE', 1000),
 
     // default per_page if not specified
-    'default_per_page' => env('API_BUDDY_DEFAULT_PER_PAGE', 10), 
+    'default_per_page' => env('API_BUDDY_DEFAULT_PER_PAGE', 10),
 
     // Use package exception handler (recommended)
-    'replace_exceptionhandler' => true
+    'replace_exceptionhandler' => true,
+
+    /**
+     * Use transformation (highly recommended for the best security protection)
+     * Since PDO does not support binding column names, See https://laravel.com/docs/5.8/queries
+     * Always use transformation whenever you allow user input to dictate the column names referenced by your queries
+     */
+    'useTransform' => true,
 ];

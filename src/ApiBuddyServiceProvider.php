@@ -49,7 +49,8 @@ class ApiBuddyServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(__DIR__.'/Config/bkstar123_apibuddy.php', 'bkstar123_apibuddy');
-        $this->app->singleton(ResourceCollectionProcessable::class, ResourceCollectionProcessor::class);
+
         $this->app->singleton(ApiResponsible::class, ApiResponser::class);
+        $this->app->singleton(ResourceCollectionProcessable::class, ResourceCollectionProcessor::class);
     }
 }

@@ -13,38 +13,43 @@ abstract class ResourceCollectionProcessor implements ResourceCollectionProcessa
 {
     /**
      * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
-     * @return array
+     * @param  string  $transformerClass
+     * @return  \Illuminate\Pagination\LengthAwarePaginator
      */
-    public function processCollection($builder) : array
+    public function processCollection($builder, $transformerClass = '') : \Illuminate\Pagination\LengthAwarePaginator
     {
-        $builder =  $this->filterData($builder);
-        $builder =  $this->sortData($builder);
+        $builder =  $this->filterData($builder, $transformerClass);
+        $builder =  $this->sortData($builder, $transformerClass);
         $builder = $this->selectFields($builder);
-        
-        return $this->paginateData($builder)->toArray();
+        return $this->paginateData($builder);
     }
 
     /**
      * @param  \Illuminate\Database\Eloquent\Model  $instance
-     * @return array
+     * @return  mixed
      */
-    public function processInstance($instance) : array
+    public function processInstance($instance)
     {
+        if (config('bkstar123_apibuddy.useTransform')) {
+            return $instance;
+        }
         $builder = $instance->getQuery();
-        return $this->selectFields($builder)->where('id', $instance->id)->get()->toArray();
+        return $this->selectFields($builder)->where('id', $instance->id)->first();
     }
 
     /**
      * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
+     * @param  string $transformerClass
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
-    abstract public function filterData($builder);
+    abstract public function filterData($builder, $transformerClass = '');
 
     /**
      * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
+     * @param  string $transformerClass
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
-    abstract public function sortData($builder);
+    abstract public function sortData($builder, $transformerClass = '');
 
     /**
      * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder

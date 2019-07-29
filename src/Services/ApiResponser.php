@@ -8,64 +8,39 @@
 namespace Bkstar123\ApiBuddy\Services;
 
 use Illuminate\Database\Eloquent\Model;
-use Bkstar123\ApiBuddy\Contracts\ApiResponsible;
-use Bkstar123\ApiBuddy\Contracts\ResourceCollectionProcessable;
+use Bkstar123\ApiBuddy\Abstracts\BaseApiResponser;
 
-class ApiResponser implements ApiResponsible
+class ApiResponser extends BaseApiResponser
 {
     /**
-     * @var \Bkstar123\ApiBuddy\Contracts\ResourceCollectionProcessable
-     */
-    protected $processor;
-
-    /**
-     * @param  \Bkstar123\ApiBuddy\Contracts\ApiResponseProcessor  $processor
-     * @return void
-     */
-    public function __construct(ResourceCollectionProcessable $processor)
-    {
-        $this->processor = $processor;
-    }
-
-    /**
      * @param \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
-     * @return \Illuminate\Http\JsonResponse
+     * @param  string $apiResource
+     * @param  string $modelClass
+     * @return  mixed (JSON)
      */
-    public function showCollection($builder) : \Illuminate\Http\JsonResponse
+    public function showCollection($builder = null, $apiResource = '', $modelClass = '')
     {
-        return $this->successResponse($this->processor->processCollection($builder));
+        if (config('bkstar123_apibuddy.useTransform') && !empty($apiResource) && !empty($modelClass)) {
+            $transformerClass =  $modelClass::$transformer;
+            if ($builder === null) {
+                $builder = $modelClass::query();
+            }
+            return $apiResource::collection($this->processor->processCollection($builder, $transformerClass));
+        } else {
+            return $this->successResponse($this->processor->processCollection($builder)->toArray());
+        }
     }
 
     /**
      * @param \Illuminate\Database\Eloquent\Model  $instance
-     * @return \Illuminate\Http\JsonResponse
+     * @param  string $apiResource
+     * @return  mixed (JSON)
      */
-    public function showInstance(Model $instance) : \Illuminate\Http\JsonResponse
+    public function showInstance(Model $instance, $apiResource = '')
     {
-        return $this->successResponse($this->processor->processInstance($instance));
-    }
-
-    /**
-     * @param  mixed  $errors
-     * @param  int  $status
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function errorResponse($errors, int $status = 500) : \Illuminate\Http\JsonResponse
-    {
-        return response()->json(['errors' => $errors, 'code' => $status], $status);
-    }
-
-    /**
-     * @param  mixed  $data
-     * @param  int  $status
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function successResponse($data, int $status = 200) : \Illuminate\Http\JsonResponse
-    {
-        if (is_array($data) && array_key_exists('data', $data)) {
-            return response()->json($data, $status);
+        if (config('bkstar123_apibuddy.useTransform') && !empty($apiResource)) {
+            return  new $apiResource($this->processor->processInstance($instance));
         }
-
-        return response()->json(['data' => $data], $status);
+        return $this->successResponse($this->processor->processInstance($instance));
     }
 }
