@@ -184,6 +184,44 @@ class UsersResource extends AppResource
     ...
 }
 ```
+
+You can add more metadata to API response by using ```afterFilter()``` hook which accepts the mapping returned by ```resourceMapping()``` as the only argument, enrich & return it, for example:  
+```php
+<?php
+/**
+ * UsersResource
+ *
+ * @author: tuanha
+ * @last-mod: 01-Mar-2018
+ */
+namespace App\Http\Resources;
+
+use Bkstar123\ApiBuddy\Http\Resources\AppResource;
+
+class UsersResource extends AppResource
+{
+    ...
+    
+    protected function afterFilter($mapping)
+    {
+        $mapping = array_merge($mapping, [
+            'links' => [
+                [
+                    'self' => 'this route',
+                    'href' => '/to/this/route'
+                ],
+                [
+                    'rel' => 'that route',
+                    'href' => 'to/that/route'
+                ]
+            ]
+        ]);
+
+        return $mapping;
+    }
+}
+```
+
 ***b) Create user transformer***  
 For example, ```app/Transformers/UserTransformer.php```
 
