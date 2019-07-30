@@ -122,7 +122,7 @@ use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
 
 class UserController extends Controller
 {
-	public function index()
+    public function index()
     {
     	return $this->apiResponser->showCollection(User::getQuery());
     }
