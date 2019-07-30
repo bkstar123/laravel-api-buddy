@@ -1,7 +1,7 @@
 <?php
 /**
  * TransformInput middleware
- * Convert the input attributes to their original versions before proceeding a request modifying resources (like POST, PUT, PATCH, DELETE)
+ * Convert the input attributes to their original versions before proceeding a request modifying resources (like POST, PUT, PATCH)
  * and convert the original attributes to their transformed versions before sending validation error response
  *
  * @author: tuanha
