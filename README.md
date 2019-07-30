@@ -151,7 +151,7 @@ class UserController extends Controller
 
 Set ```useTransform``` option to ```true``` in ```/config/bkstar123_apibuddy.php```  
 
-***a) Create user resource*** 
+***a) Create user resource***  
 - ```php artisan make:resource UserResource```  
 
 It will be created in ```pp/Http/Resources``` directory  
@@ -184,7 +184,7 @@ class UsersResource extends AppResource
     ...
 }
 ```
-***b) Create user transformer***
+***b) Create user transformer***  
 For example, ```app/Transformers/UserTransformer.php```
 
 This class defines the mapping between the model's original columns and their transformed versions (mainly for the purpose of client->server direction)  
