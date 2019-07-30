@@ -8,11 +8,13 @@
 
 namespace Bkstar123\ApiBuddy;
 
+use Barryvdh\Cors\HandleCors;
 use Illuminate\Support\ServiceProvider;
 use Bkstar123\ApiBuddy\Exceptions\Handler;
 use Bkstar123\ApiBuddy\Services\ApiResponser;
 use Bkstar123\ApiBuddy\Contracts\ApiResponsible;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Bkstar123\ApiBuddy\Http\Middleware\TransformInput;
 use Bkstar123\ApiBuddy\Services\ResourceCollectionProcessor;
 use Bkstar123\ApiBuddy\Console\Commands\PublishConfiguration;
 use Bkstar123\ApiBuddy\Contracts\ResourceCollectionProcessable;
@@ -52,5 +54,7 @@ class ApiBuddyServiceProvider extends ServiceProvider
 
         $this->app->singleton(ApiResponsible::class, ApiResponser::class);
         $this->app->singleton(ResourceCollectionProcessable::class, ResourceCollectionProcessor::class);
+        $this->app->singleton('apibuddy.transform', TransformInput::class);
+        $this->app->singleton('apibuddy.cors', HandleCors::class);
     }
 }
