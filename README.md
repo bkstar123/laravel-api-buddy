@@ -334,3 +334,30 @@ class Kernel extends HttpKernel
 ```
 
 This middleware is automatically register with Laravel IoC container by the package.
+
+## 4.5 Consuming API
+
+You can use the following queries to customize the API response:  
+
+a) Sorting  
+?sort_by=+col1,-col2  
+
+Sort the response data by col1 in the ascending order & col2 in the descending order  
+
+b) Selecting  
+?fields=col1,col2  
+
+Includes only col1 & col2 in the response data  
+
+c) Filtering  
+?col1=val1&col2{lte}=val2  
+
+Filter the response data where ```col1 = val1``` and ```col2 <= val2```  
+
+The accepted operators: ```lt, lte, gt, gte, eq, neq``` (defaults to ```eq```)  
+
+d) Paginating  
+?limit=10  
+?limit=10&page=5  
+
+Paginating the response data with the page size of 10 items and get the page 6  
