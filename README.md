@@ -151,7 +151,7 @@ class UserController extends Controller
 
 Set ```useTransform``` option to ```true``` in ```/config/bkstar123_apibuddy.php```  
 
-a) Create user resource:  
+***a) Create user resource*** 
 - ```php artisan make:resource UserResource```  
 
 It will be created in ```pp/Http/Resources``` directory  
@@ -184,7 +184,7 @@ class UsersResource extends AppResource
     ...
 }
 ```
-b) Create user transformer  
+***b) Create user transformer***
 For example, ```app/Transformers/UserTransformer.php```
 
 This class defines the mapping between the model's original columns and their transformed versions (mainly for the purpose of client->server direction)  
@@ -249,7 +249,7 @@ class User extends Authenticatable
 
 ```
 
-c) ```app/Http/Controllers/UserController.php```  
+***c) ```app/Http/Controllers/UserController.php```***
 ```php
 <?php
 
@@ -339,25 +339,25 @@ This middleware is automatically register with Laravel IoC container by the pack
 
 You can use the following queries to customize the API response:  
 
-a) Sorting  
-?sort_by=+col1,-col2  
+***a) Sorting***  
+```?sort_by=+col1,-col2```  
 
 Sort the response data by col1 in the ascending order & col2 in the descending order  
 
-b) Selecting  
-?fields=col1,col2  
+***b) Selecting***  
+```?fields=col1,col2```   
 
 Includes only col1 & col2 in the response data  
 
-c) Filtering  
-?col1=val1&col2{lte}=val2  
+***c) Filtering***  
+```?col1=val1&col2{lte}=val2```   
 
 Filter the response data where ```col1 = val1``` and ```col2 <= val2```  
 
 The accepted operators: ```lt, lte, gt, gte, eq, neq``` (defaults to ```eq```)  
 
-d) Paginating  
-?limit=10  
-?limit=10&page=5  
+***d) Paginating***  
+```?limit=10```  
+```?limit=10&page=5```    
 
 Paginating the response data with the page size of 10 items and get the page 6  
