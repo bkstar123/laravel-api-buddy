@@ -17,10 +17,10 @@ It will copy all necessary configuration files to ```/config/bkstar123_apibuddy.
 
 ## 3 Configuration
 
-```/config/cors.php``` is the config file of ***```barryvdh/laravel-cors```*** package, you should consult to its documentation for further details.  
+```/config/cors.php``` is the config file of ***```barryvdh/laravel-cors```*** package, you should consult its documentation for the further details.  
 
-```/config/bkstar123_apibuddy.php``` is the package main config file, it contains the following options:  
-- **```'max_per_page'```**:  The maximum page size that a request can specify, by default it is 1000 items/page
+```/config/bkstar123_apibuddy.php``` is the package's main config file, it contains the following options:  
+- **```max_per_page```**:  The maximum page size that a request can specify, by default it is 1000 items/page
 - **```default_per_page```**: The default page size that will be applied if a request does not specify, by default it is 10 items/page
 - **```replace_exceptionhandler```**: You can choose to replace the Laravel default exception handler with the one provided by the package or not. It is recommended to set to ```true``` (its default) so that all exceptions can be converted to appropriate JSON responses
 - **```useTransform```**: Whether or not to use transformation. It is recommmended to set to ```true``` (its default) for the best security protection. Since the underlying PDO DB driver does not support binding column names, see https://laravel.com/docs/5.8/queries; the transformation should always be used whenever you allow user input to dictate the column names referenced by your queries.  
