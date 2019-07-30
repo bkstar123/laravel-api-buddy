@@ -28,6 +28,10 @@ abstract class AppResource extends JsonResource
 
         $mapping = $this->filterMapping($mapping);
 
+        if (method_exists($this, 'afterFilter')) {
+            $mapping = $this->afterFilter($mapping);
+        }
+
         return $mapping;
     }
 }

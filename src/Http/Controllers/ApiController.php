@@ -23,11 +23,10 @@ class ApiController extends BaseController
     protected $apiResponser;
 
     /**
-     * @param  \Bkstar123\ApiBuddy\Contracts\ApiResponsible  $apiResponser
      * @return void
      */
-    public function __construct(ApiResponsible $apiResponser)
+    public function __construct()
     {
-        $this->apiResponser = $apiResponser;
+        $this->apiResponser = app(ApiResponsible::class);
     }
 }

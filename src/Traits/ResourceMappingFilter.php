@@ -1,7 +1,7 @@
 <?php
 /**
- * ResourceMappingFilter
- * Filter the API Resource mappings in order to keep only the fields specified in the user request
+ * ResourceMappingFilter trait
+ * Filter the API Resource mapping to keep only the fields given in the request
  *
  * @author: tuanha
  * @last-mod: 29-July-2019
@@ -11,7 +11,7 @@ namespace Bkstar123\ApiBuddy\Traits;
 trait ResourceMappingFilter
 {
     /**
-     * Filter mapping according to the fields given in the request
+     * Filter the mapping according to the fields given in the request
      *
      * @param array  $mapping
      * @return array
