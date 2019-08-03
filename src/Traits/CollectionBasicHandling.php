@@ -9,8 +9,6 @@ namespace Bkstar123\ApiBuddy\Traits;
 
 use Exception;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Database\Query\Builder as QueryBuilder;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 trait CollectionBasicHandling
 {
@@ -20,7 +18,6 @@ trait CollectionBasicHandling
      */
     public function paginateData($builder) : \Illuminate\Pagination\LengthAwarePaginator
     {
-        $this->validateInputFor('paginateData', $builder);
         if (request()->filled('limit')) {
             $rules = [
                 'limit' => 'integer|min:1|max:' . config('bkstar123_apibuddy.max_per_page'),
@@ -40,7 +37,6 @@ trait CollectionBasicHandling
      */
     public function filterData($builder, $transformerClass = '')
     {
-        $this->validateInputFor('filterData', $builder);
         $validOpKeys = ['gt', 'gte', 'lt', 'lte', 'neq', 'eq'];
         $opMapping = [
             'gt' => '>',
@@ -78,7 +74,6 @@ trait CollectionBasicHandling
      */
     public function sortData($builder, $transformerClass = '')
     {
-        $this->validateInputFor('sortData', $builder);
         if (request()->filled('sort_by')) {
             $sortCols = request()->input('sort_by');
             $sortCols = explode(',', $sortCols);
@@ -100,7 +95,6 @@ trait CollectionBasicHandling
      */
     public function selectFields($builder)
     {
-        $this->validateInputFor('selectFields', $builder);
         if (!config('bkstar123_apibuddy.useTransform')) {
             if (request()->filled('fields')) {
                 $fields = request()->input('fields');
@@ -112,23 +106,5 @@ trait CollectionBasicHandling
         }
         // In case of using transformation, field selection is done via the transformation
         return $builder;
-    }
-
-    /**
-     * Validate the input for the given function name
-     *
-     * @param  string  $function_name
-     * @param  mixed  $builder
-     * @return true|Exception
-     */
-    private function validateInputFor($funcion_name, $builder)
-    {
-        if (!($builder instanceof QueryBuilder) && !($builder instanceof EloquentBuilder)) {
-            throw new Exception('Invalid parameter given to '.$funcion_name.'() in the '.
-                debug_backtrace()[1]['function'].'() method of the '.
-                debug_backtrace()[1]['class'].' class, it must be an instance of either '.
-                EloquentBuilder::class.' or '.QueryBuilder::class);
-        }
-        return true;
     }
 }
