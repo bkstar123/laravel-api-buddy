@@ -9,6 +9,7 @@ namespace Bkstar123\ApiBuddy\Services;
 
 use Illuminate\Database\Eloquent\Model;
 use Bkstar123\ApiBuddy\Abstracts\BaseApiResponser;
+use Bkstar123\ApiBuddy\Http\Resources\AppResource;
 
 class ApiResponser extends BaseApiResponser
 {
@@ -38,8 +39,12 @@ class ApiResponser extends BaseApiResponser
      */
     public function showInstance(Model $instance, $apiResource = '')
     {
-        if (config('bkstar123_apibuddy.useTransform') && !empty($apiResource)) {
-            return  new $apiResource($this->processor->processInstance($instance));
+        if (config('bkstar123_apibuddy.useTransform')) {
+            if (is_subclass_of($apiResource, AppResource::class)) {
+                return  new $apiResource($this->processor->processInstance($instance));
+            }
+            throw new \Exception('The second argument passed to showInstance() method of the class ' 
+                      . get_class(). ' must be a sub-class of '. AppResource::class);
         }
         return $this->successResponse($this->processor->processInstance($instance));
     }
