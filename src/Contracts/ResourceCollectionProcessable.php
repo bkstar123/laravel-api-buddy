@@ -7,6 +7,8 @@
  */
 namespace Bkstar123\ApiBuddy\Contracts;
 
+use Illuminate\Database\Eloquent\Model;
+
 interface ResourceCollectionProcessable
 {
     /**
@@ -22,5 +24,5 @@ interface ResourceCollectionProcessable
      * @param  \Illuminate\Database\Eloquent\Model  $instance
      * @return  mixed
      */
-    public function processInstance($instance);
+    public function processInstance(Model $instance);
 }

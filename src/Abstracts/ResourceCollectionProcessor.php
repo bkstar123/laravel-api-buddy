@@ -7,6 +7,7 @@
  */
 namespace Bkstar123\ApiBuddy\Abstracts;
 
+use Illuminate\Database\Eloquent\Model;
 use Bkstar123\ApiBuddy\Contracts\ResourceCollectionProcessable;
 
 abstract class ResourceCollectionProcessor implements ResourceCollectionProcessable
@@ -28,7 +29,7 @@ abstract class ResourceCollectionProcessor implements ResourceCollectionProcessa
      * @param  \Illuminate\Database\Eloquent\Model  $instance
      * @return  mixed
      */
-    public function processInstance($instance)
+    public function processInstance(Model $instance)
     {
         if (config('bkstar123_apibuddy.useTransform')) {
             return $instance;
