@@ -61,7 +61,7 @@ All API controllers extending ```ApiController``` have access to the property **
      * @param  string $modelClass
      * @return  mixed (JSON)
      */
-    public function showCollection($builder = null, $apiResource = '', $modelClass = '');
+    public function showCollection($builder, $apiResource = '', $modelClass = '');
 
     /**
      * Show a resource instance
@@ -83,7 +83,7 @@ Where:
 Example:  
 ```php
 <?php
-$eloquenrBuilder = User::getQuery();
+$eloquentBuilder = User::getQuery();
 $queryBuilder = DB::table('users');
 
 // You can further add more query scope or modifying the builder before passing it to showCollection()
@@ -142,7 +142,7 @@ class UserController extends Controller
             'email.email' => 'The email must be valid'
         ]);
         $user = User::create($request->all());
-        return $this->apiResponser->successResponse($user, 201);
+        return $this->apiResponser->showInstance($user, 201);
     }
 }
 ```
@@ -188,12 +188,6 @@ class UsersResource extends AppResource
 You can add more metadata to API response by using ```afterFilter()``` hook which accepts the mapping returned by ```resourceMapping()``` as the only argument, enrich & return it, for example:  
 ```php
 <?php
-/**
- * UsersResource
- *
- * @author: tuanha
- * @last-mod: 01-Mar-2018
- */
 namespace App\Http\Resources;
 
 use Bkstar123\ApiBuddy\Http\Resources\AppResource;
@@ -262,31 +256,6 @@ class UserTransformer extends AppTransformer
 }
 ```
 
-Then, assign the transformer class to ```$transformer``` property of ```App\User``` model  
-```php
-<?php
-
-namespace App;
-
-use App\Transformers\UserTransformer;
-...
-
-class User extends Authenticatable
-{
-    ...
-
-    /**
-     * Assign the associated transformer class name
-     *
-     * @var string
-     */
-    public static $transformer = UserTransformer::class;
-
-    ...
-}
-
-```
-
 ***c) ```app/Http/Controllers/UserController.php```***
 ```php
 <?php
@@ -309,9 +278,9 @@ class UserController extends Controller
 
     public function index()
     {
-        $modelClass = User::class;
+        $transformerClass = UserTransformer::class;
         $apiResource = UsersResource::class;
-    	return $this->apiResponser->showCollection(User::getQuery(), $apiResource, $modelClass);
+        return $this->apiResponser->showCollection(User::getQuery(), $apiResource, $transformerClass);
     }
 
     public function showUser(User $user)
@@ -330,7 +299,8 @@ class UserController extends Controller
             'email.email' => 'The email must be valid'
         ]);
         $user = User::create($request->all());
-        return $this->apiResponser->successResponse($user, 201);
+        $apiResource = UsersResource::class;
+        return $this->apiResponser->showInstance($user, $apiResource, 201);
     }
 }
 
