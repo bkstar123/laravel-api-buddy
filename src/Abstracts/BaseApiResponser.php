@@ -54,10 +54,10 @@ abstract class BaseApiResponser implements ApiResponsible
     /**
      * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @param  string $apiResource
-     * @param  string $modelClass
+     * @param  string $transformerClass
      * @return  mixed (JSON)
      */
-    abstract public function showCollection($builder = null, $apiResource = '', $modelClass = '');
+    abstract public function showCollection($builder, $apiResource = '', $transformerClass = '');
 
     /**
      * @param \Illuminate\Database\Eloquent\Model  $instance

@@ -34,10 +34,10 @@ interface ApiResponsible
      *
      * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @param  string $apiResource
-     * @param  string $modelClass
+     * @param  string $transformerClass
      * @return  mixed (JSON)
      */
-    public function showCollection($builder = null, $apiResource = '', $modelClass = '');
+    public function showCollection($builder, $apiResource = '', $transformerClass = '');
 
     /**
      * Show a resource instance

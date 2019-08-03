@@ -16,16 +16,12 @@ class ApiResponser extends BaseApiResponser
     /**
      * @param \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @param  string $apiResource
-     * @param  string $modelClass
+     * @param  string $transformerClass
      * @return  mixed (JSON)
      */
-    public function showCollection($builder = null, $apiResource = '', $modelClass = '')
+    public function showCollection($builder, $apiResource = '', $transformerClass = '')
     {
-        if (config('bkstar123_apibuddy.useTransform') && !empty($apiResource) && !empty($modelClass)) {
-            $transformerClass =  $modelClass::$transformer;
-            if ($builder === null) {
-                $builder = $modelClass::query();
-            }
+        if (config('bkstar123_apibuddy.useTransform') && !empty($apiResource) && !empty($transformerClass)) {
             return $apiResource::collection($this->processor->processCollection($builder, $transformerClass));
         } else {
             return $this->successResponse($this->processor->processCollection($builder)->toArray());
