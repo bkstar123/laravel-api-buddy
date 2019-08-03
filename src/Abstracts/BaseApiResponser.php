@@ -62,7 +62,8 @@ abstract class BaseApiResponser implements ApiResponsible
     /**
      * @param \Illuminate\Database\Eloquent\Model  $instance
      * @param  string $apiResource
+     * @param  int $code
      * @return  mixed (JSON)
      */
-    abstract public function showInstance(Model $instance, $apiResource = '');
+    abstract public function showInstance(Model $instance, $apiResource = '', $code = 200);
 }
