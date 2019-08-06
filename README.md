@@ -1,5 +1,7 @@
 # laravel-api-buddy     
-> This lightweight Laravel package provides a powerful and simpple toolset for quickly building high-quality RESTful API web services for Eloquent model resources with several advanced features such as schema transformation as well as sorting, filtering, selecting and paginating. Using together with the Laravel Passport package, you can have a full-fledge API system ready to serve any clients in a matter of minutes.    
+> This lightweight Laravel package provides a powerful and simpple toolset for quickly building high-quality RESTful API web services for Eloquent model resources with several advanced features such as schema transformation as well as sorting, filtering, selecting and paginating. Using together with the Laravel Passport package, you can have a full-fledge API system ready to serve any clients in a matter of minutes.  
+
+**Note**: This is not a silver bullet to solve all API problems, for example: it does not support ```grouping```, ```having``` queries   
 
 ## 1 Requirements  
 
@@ -58,19 +60,20 @@ All API controllers extending ```ApiController``` have access to the property **
      *
      * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @param  string $apiResource
-     * @param  string $modelClass
-     * @return  mixed (JSON)
+     * @param  string $transformerClass
+     * @return  \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\JsonResponse
      */
-    public function showCollection($builder, $apiResource = '', $modelClass = '');
+    public function showCollection($builder, $apiResource = '', $transformerClass = '');
 
     /**
      * Show a resource instance
      *
      * @param  \Illuminate\Database\Eloquent\Model  $instance
      * @param  string $apiResource
-     * @return  mixed (JSON)
+     * @param  int $code
+     * @return  \Illuminate\Http\JsonResponse
      */
-    public function showInstance(Model $instance, $apiResource = '');
+    public function showInstance(Model $instance, $apiResource = '', $code = 200) : \Illuminate\Http\JsonResponse;
 ```
 
 - **```showCollection()```**: is to return a collection of model resources in JSON with some features such as sorting, filtering, column selecting and paginating  
@@ -89,8 +92,11 @@ $queryBuilder = DB::table('users');
 // You can further add more query scope or modifying the builder before passing it to showCollection()
 ```
 
+The following arguments are to be passed only in the case of using transformation:  
 - **```$apiResource```**: fully qualified class name of the model API resource. See more about API Resources at https://laravel.com/docs/5.8/eloquent-resources  
-- **```$modelClass```**: the fully qualified class name of the model, such as ```App\User```
+- **```$transformerClass```**: the fully qualified class name of the model transforming class, such as ```App\Transformers\UserTransformer```. The transforming class must extend ```\Bkstar123\ApiBuddy\Transformers\AppTransformer``` and defined the following properties:  
++) ```protected static $transformedKeys;```  
++) ```protected static $originalKeys;```  
 
 ### 4.2 Without transformation
 
@@ -111,7 +117,7 @@ class UserController extends Controller
 	...
 }
 ```
-- Assuming that ```index()``` returns a collection of user resource, ```showUser()``` returns an user instance and ```create()``` creates a new user instance  
+- Assuming that ```index()``` returns a collection of user resources, ```showUser()``` returns an user instance and ```create()``` creates a new user instance  
 ```php
 <?php
 namespace App\Http\Controllers;
@@ -154,11 +160,11 @@ Set ```useTransform``` option to ```true``` in ```/config/bkstar123_apibuddy.php
 ***a) Create user resource***  
 - ```php artisan make:resource UserResource```  
 
-It will be created in ```pp/Http/Resources``` directory  
+It will be created in ```app/Http/Resources``` directory  
 
 
 - Make it to extends ```Bkstar123\ApiBuddy\Http\Resources\AppResource```  
-- The only method for it to implement is **```resourceMapping()```**, this method defines the way to transform the API response (for the purpose of server->client direction)  
+- The only method for it to implement is **```resourceMapping()```**, this method defines the way to transform the API response (server->client direction)  
 ```php
 <?php
 namespace App\Http\Resources;

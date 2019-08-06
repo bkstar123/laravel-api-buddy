@@ -55,7 +55,7 @@ abstract class BaseApiResponser implements ApiResponsible
      * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
      * @param  string $apiResource
      * @param  string $transformerClass
-     * @return  mixed (JSON)
+     * @return  \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\JsonResponse
      */
     abstract public function showCollection($builder, $apiResource = '', $transformerClass = '');
 
@@ -63,7 +63,7 @@ abstract class BaseApiResponser implements ApiResponsible
      * @param \Illuminate\Database\Eloquent\Model  $instance
      * @param  string $apiResource
      * @param  int $code
-     * @return  mixed (JSON)
+     * @return  \Illuminate\Http\JsonResponse
      */
-    abstract public function showInstance(Model $instance, $apiResource = '', $code = 200);
+    abstract public function showInstance(Model $instance, $apiResource = '', $code = 200) : \Illuminate\Http\JsonResponse;
 }
