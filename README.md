@@ -160,7 +160,7 @@ Set ```useTransform``` option to ```true``` in ```/config/bkstar123_apibuddy.php
 ***a) Create user resource***  
 - ```php artisan make:resource UserResource```  
 
-It will be created in ```app/Http/Resources``` directory  
+It will be created in ```/app/Http/Resources``` directory  
 
 
 - Make it to extends ```Bkstar123\ApiBuddy\Http\Resources\AppResource```  
