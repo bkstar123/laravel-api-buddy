@@ -32,12 +32,12 @@ class ApiResponser extends BaseApiResponser
 
         if (config('bkstar123_apibuddy.useTransform')) {
             if (!is_subclass_of($apiResource, AppResource::class)) {
-                throw new Exception('The second argument passed to the showCollection() method of the class ' 
+                throw new Exception('The second argument passed to the showCollection() method of the class '
                       . get_class(). ' must be a sub-class of '. AppResource::class);
             }
 
             if (!is_subclass_of($transformerClass, AppTransformer::class)) {
-                throw new Exception('The third argument passed to the showCollection() method of the class ' 
+                throw new Exception('The third argument passed to the showCollection() method of the class '
                       . get_class(). ' must be a sub-class of '. AppTransformer::class);
             }
             return $apiResource::collection($this->processor->processCollection($builder, $transformerClass));
@@ -56,7 +56,7 @@ class ApiResponser extends BaseApiResponser
     {
         if (config('bkstar123_apibuddy.useTransform')) {
             if (!is_subclass_of($apiResource, AppResource::class)) {
-                throw new Exception('The second argument passed to the showInstance() method of the class ' 
+                throw new Exception('The second argument passed to the showInstance() method of the class '
                           . get_class(). ' must be a sub-class of '. AppResource::class);
             }
             return $this->successResponse(new $apiResource($this->processor->processInstance($instance)), $code);
