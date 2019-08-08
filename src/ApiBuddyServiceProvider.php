@@ -18,7 +18,7 @@ use Bkstar123\ApiBuddy\Http\Middleware\TransformInput;
 use Bkstar123\ApiBuddy\Services\ResourceCollectionProcessor;
 use Bkstar123\ApiBuddy\Console\Commands\PublishConfiguration;
 use Bkstar123\ApiBuddy\Contracts\ResourceCollectionProcessable;
-use Bkstar123\ApiBuddy\Console\Commands\Scalfoldings\Transformer;
+use Bkstar123\ApiBuddy\Console\Commands\Scalfoldings\Scalfoldings;
 
 class ApiBuddyServiceProvider extends ServiceProvider
 {
@@ -36,7 +36,7 @@ class ApiBuddyServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 PublishConfiguration::class,
-                Transformer::class,
+                Scalfoldings::class,
             ]);
         }
 

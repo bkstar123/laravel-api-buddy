@@ -9,13 +9,13 @@
 $data = <<<END
 <?php
 /**
- * $transformer transformer
+ * $name transformer
  */
 namespace App\Transformers;
 
 use Bkstar123\ApiBuddy\Transformers\AppTransformer;
 
-class $transformer extends AppTransformer
+class $name extends AppTransformer
 {
     /**
      * Transformed keys -> Original keys mapping
