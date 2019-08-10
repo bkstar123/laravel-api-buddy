@@ -1,5 +1,5 @@
 # laravel-api-buddy     
-> This lightweight Laravel package provides a powerful and simpple toolset for quickly building high-quality RESTful API web services for Eloquent model resources with several advanced features such as schema transformation as well as sorting, filtering, selecting and paginating. Using together with the Laravel Passport package, you can have a full-fledge API system ready to serve any clients in a matter of minutes.  
+> This lightweight Laravel package provides a powerful and simple toolset for quickly building high-quality RESTful API web services for Eloquent model resources with several advanced features such as schema transformation as well as sorting, filtering, selecting and paginating. Using together with the Laravel Passport package, you can have a full-fledge API system ready to serve any clients in a matter of minutes.  
 
 **Note**: This is not a silver bullet to solve all API problems, for example: it does not support ```grouping```, ```having``` queries   
 
