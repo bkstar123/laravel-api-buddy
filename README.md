@@ -29,9 +29,14 @@ It will copy all necessary configuration files to ```/config/bkstar123_apibuddy.
 
 ## 4 Usage
 
+Supposing that we need to build some API endpoints for ```users``` resource.  
+
 ### 4.1 General information
 
-The package provides ***```\Bkstar123\ApiBuddy\Http\Controllers\ApiController```*** as the base API controller that can be extended by other API controllers. This ```ApiController``` has been automatically injected with an ```Bkstar123\ApiBuddy\Contracts\ApiResponsible``` instance.  
+The package provides ***```\Bkstar123\ApiBuddy\Http\Controllers\ApiController```*** as the base API controller that can be extended by other API controllers. This ```ApiController``` has been automatically injected with an ```Bkstar123\ApiBuddy\Contracts\ApiResponsible``` instance.    
+
+You can quickly scalfold an API controller with ```apibuddy:make --type=controller``` command. For example:  
+```php artisan apibuddy:make UserController --type=controller```  
 
 All API controllers extending ```ApiController``` have access to the property **``$apiResponser``** which holds an ```ApiResponsible``` instance. The ```ApiResponsible``` instance exposes the following methods:  
 
@@ -98,26 +103,11 @@ The following arguments are to be passed only in the case of using transformatio
 +) ```protected static $transformedKeys;```  
 +) ```protected static $originalKeys;```  
 
-### 4.2 Without transformation
-
-Supposing that we need to build some API endpoints for ```users``` resource.  
+### 4.2 Without transformation 
 
 - Set ```useTransform``` option to ```false``` in ```/config/bkstar123_apibuddy.php```  
-- Make ```UserController``` to extend ```\Bkstar123\ApiBuddy\Http\Controllers\ApiController```  
-```php
-<?php
-namespace App\Http\Controllers;
-
-use App\User;
-use Illuminate\Http\Request;
-use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
-
-class UserController extends Controller
-{
-	...
-}
-```
-- Assuming that ```index()``` returns a collection of user resources, ```showUser()``` returns an user instance and ```create()``` creates a new user instance  
+- Run ```php artisan apibuddy:make UserController --type=controller```  
+- In ***app/Http/Controllers/UserController.php***, assuming that ```index()``` returns a collection of user resources, ```showUser()``` returns an user instance and ```create()``` creates a new user instance  
 ```php
 <?php
 namespace App\Http\Controllers;
@@ -157,14 +147,12 @@ class UserController extends Controller
 
 Set ```useTransform``` option to ```true``` in ```/config/bkstar123_apibuddy.php```  
 
-***a) Create user resource***  
-- ```php artisan make:resource UserResource```  
+***a) Create API resource***  
+- ```php artisan apibuddy:make UsersResource --type=resource```  
 
-It will be created in ```/app/Http/Resources``` directory  
+The ```UsersResource``` API resource will be created in ```/app/Http/Resources``` directory, it extends ```Bkstar123\ApiBuddy\Http\Resources\AppResource```  
 
-
-- Make it to extends ```Bkstar123\ApiBuddy\Http\Resources\AppResource```  
-- The only method for it to implement is **```resourceMapping()```**, this method defines the way to transform the API response (server->client direction)  
+- The only required method for it to implement is **```resourceMapping()```**, this method defines the way to transform the API response (server->client direction)  
 ```php
 <?php
 namespace App\Http\Resources;
@@ -222,8 +210,8 @@ class UsersResource extends AppResource
 }
 ```
 
-***b) Create user transformer***  
-For example, ```app/Transformers/UserTransformer.php```
+***b) Create transformer***  
+Run: ```php artisan apibuddy:make UserTransformer --type=transformer```
 
 This class defines the mapping between the model's original columns and their transformed versions (mainly for the purpose of client->server direction)  
 ```php
