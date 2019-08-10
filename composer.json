@@ -6,7 +6,7 @@
         "api",
         "RESTful"
     ],
-    "type": "composer-plugin",
+    "type": "library",
     "license": "MIT",
     "authors": [
         {
