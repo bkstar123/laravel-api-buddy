@@ -53,26 +53,26 @@ class Scalfoldings extends Command
         }
         switch ($type) {
             case 'transformer':
-                $filePath = app_path().'/Transformers123';
+                $filePath = app_path('Transformers');
                 break;
             case 'resource':
-                $filePath = app_path().'/Http/Resources';
+                $filePath = app_path('Http/Resources');
                 break;
             case 'controller':
-                $filePath = app_path().'/Http/Controllers';
+                $filePath = app_path('Http/Controllers');
                 break;
             default:
                 return $this->error("The option --type must be one of the following values (case-sensitive):\n".
                 "-resource, controller, transformer");
                 break;
         }
-        $data = require(__DIR__.'/Templates/'. $type.'.php');
+        $data = require(__DIR__."/Templates/$type.php");
         if (!file_exists($filePath)) {
             if (mkdir($filePath, 0755, true) === false) {
                 return $this->info('Error creating one of the file path elements, please verify permissions');
             }
         }
-        $file = $filePath.'/'.$name.'.php';
+        $file = "$filePath/$name.php";
         if (!file_exists($file)) {
             if (file_put_contents($file, $data) === false) {
                 return $this->info('Error writing content to the file, please verify permissions');
