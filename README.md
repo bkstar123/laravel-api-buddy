@@ -337,7 +337,7 @@ class Kernel extends HttpKernel
 
 This middleware is automatically register with Laravel IoC container by the package.
 
-## 4.5 Consuming API
+### 4.5 Consuming API
 
 You can use the following queries to customize the API response:  
 
