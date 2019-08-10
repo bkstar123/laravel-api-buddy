@@ -19,7 +19,7 @@ class Scalfoldings extends Command
      *
      * @var string
      */
-    protected $signature = 'apibuddy:make {--type=} {name}';
+    protected $signature = 'apibuddy:make {--t|type=} {name}';
 
     /**
      * The console command description.
