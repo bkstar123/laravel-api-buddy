@@ -1923,4 +1923,123 @@ curl -X GET /api/v1/users/{email}/posts # you can also apply sorting, filtering,
 
 ### 5.3 Protect your API endpoints with Laravel Passport
 
-- To be written
+Refer to https://laravel.com/docs/5.8/passport & https://oauth2.thephpleague.com/terminology/ for further details.  
+
+#### 5.3.1 Install and configure Laravel Passport
+
+- ```composer require laravel/passport```  
+
+- ```php artisan migrate```  
+
+- ```php artisan passport:install```  
+
+This command will create two clients for you: ***personal access*** & ***password grant*** clients
+
+- Add ```Laravel\Passport\HasApiTokens``` to ```App\User``` model.  
+
+- Add ```Passport::routes()``` method within the boot method of your ```AuthServiceProvider```  
+
+- Finally, in your ```config/auth.php``` configuration file, you should set the driver option of the api authentication guard to ```passport```. This will instruct your application to use Passport's  TokenGuard when authenticating incoming API requests.  
+
+- When deploying Passport to your production servers for the first time, you will likely need to run the ```passport:keys``` command:  
+```php artisan passport:keys```  
+
+- By default, Passport issues long-lived access tokens that expire after one year. If you would like to configure a longer/shorter token lifetime, you may use the ```tokensExpireIn```,  ```refreshTokensExpireIn```, and ```personalAccessTokensExpireIn``` methods. These methods should be called from the boot method of your ```AuthServiceProvider```, for example:  
+
+```php
+/**
+ * Register any authentication / authorization services.
+ *
+ * @return void
+ */
+public function boot()
+{
+    $this->registerPolicies();
+
+    Passport::routes();
+
+    Passport::tokensExpireIn(now()->addDays(15));
+
+    Passport::refreshTokensExpireIn(now()->addDays(30));
+
+    Passport::personalAccessTokensExpireIn(now()->addMonths(6));
+}
+```  
+
+#### 5.3.2 Secure API routes
+
+There are two middleware that you can use to secure API routes:  
+- ```auth:api```  
+- ```Laravel\Passport\Http\Middleware\CheckClientCredentials```  
+
+The latter can be use by placing an alias to the ```$routeMiddleware``` property of your ```app/Http/Kernel.php``` file:  
+```php
+use Laravel\Passport\Http\Middleware\CheckClientCredentials;
+
+protected $routeMiddleware = [
+    'client' => CheckClientCredentials::class,
+];
+```  
+
+Then, use ```client```middleware to protect your required API routes or controller methods.  
+
+-- ```CheckClientCredentials::class``` provides the lowest level of protection, it only verifies the client itself but does not care about the client owner's perspective. So, this middleware is suitable for machine-to-machine authentication. For example, you might use this grant in a scheduled job which is performing maintenance tasks over an API.  
+
+-- ```auth:api```not only verifies the client, but also its owner's perspective. Therefore, this middleware is suitable for verifying a human authentication.  
+
+##### 5.3.2.1 Using CheckClientCredentials::class middleware
+
+This section will demonstrate how to use ```CheckClientCredentials::class``` middleware to protect all the GET API routes, as follows:  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| is assigned the "api" middleware group. Enjoy building your API!
+|
+*/
+
+// Route::middleware('auth:api')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
+
+Route::group(['prefix' => 'v1'], function () {
+    Route::get('posts', 'PostController@getAllPosts')->name('posts.index')->middleware('client');
+    Route::get('posts/{post}', 'PostController@getPost')->name('posts.show')->middleware('client');
+    Route::get('posts/{post}/tags', 'PostController@getPostTags')->name('post.tags.index')->middleware('client');
+    Route::get('posts/{post}/users', 'PostController@getPostOwner')->name('post.owner.show')->middleware('client');
+    
+
+    Route::get('tags', 'TagController@getAllTags')->name('tages.index')->middleware('client');
+    Route::get('tags/{tag}', 'TagController@getTag')->name('tags.show')->middleware('client');
+    Route::get('tags/{tag}/posts', 'TagController@getTagPosts')->name('tag.posts.index')->middleware('client');
+    
+
+    Route::get('users', 'UserController@getAllUsers')->name('users.index')->middleware('client');
+    Route::get('users/{user}', 'UserController@getUser')->name('users.show')->middleware('client');
+    Route::get('users/{user}/posts', 'UserController@getUserPosts')->name('user.posts.index')->middleware('client');
+
+    // ...Other routes
+});
+```  
+
+-- After that, you will no longer be able to access the above endpoints like ```curl -X GET /api/v1/tags```  
+
+-- Instead, you will need to get the ***client credentials grant type***<sup>(1)</sup> access token, and send the received token with every request to the above endpoints  
+
+```bash
+curl -X POST /oauth/token \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'client_id=1&client_secret=4rfurOhtDaxGkHEPSL73R6Ujl3GRXAFAyyHZZhDu&grant_type=client_credentials'
+
+curl -X GET /api/v1/tags \
+  -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImM3NGVjZTVmMmJlZTQyM2Q2ZmE5NDBmYjhkODkxOTkxNWU4OGI2YmZjMTQ4NmYyYzQzZWU0YThlYzc2ZTNlYTE4MWNjZDgwNmE1ZDQ0MDc3In0.eyJhdWQiOiIxIiwianRpIjoiYzc0ZWNlNWYyYmVlNDIzZDZmYTk0MGZiOGQ4OTE5OTE1ZTg4YjZiZmMxNDg2ZjJjNDNlZTRhOGVjNzZlM2VhMTgxY2NkODA2YTVkNDQwNzciLCJpYXQiOjE1NjU1MTkzNzUsIm5iZiI6MTU2NTUxOTM3NSwiZXhwIjoxNTY2ODE1Mzc1LCJzdWIiOiIiLCJzY29wZXMiOltdfQ.ba-YHda7qk0awO4wMX2FId1c29a-WKNTbsMLMjfDgl2cgus6sJB1Q-FDZOKVZ6cXiQXqmMfp4H_QFfwMGo4RIltARzx93QND3G8Q7pVCQESJw1eK2cKAAAXSHo0-ooS33t0GpAUM1_IYv9VsoMiWc2MkD2xTwl0Z1nMhLwgxJ5_bruVgotZi11O5zXL9xTfGkB6t9OTrAWoqCZ8JT89VR-gUwBhB5vCGCDIXXTWzxFAMjpzC3N9wB-VeS1-FWnjNd_qGPMP2eTBKqbHrARgGbjnSO8CQwQGpHxpegDcT06KB5l6QxqEXJD5iRkmmZ6q6uNuGoPy-PhEMbYwzcsYGAatsBRCGAfP5yfSoy2fWD01Jw62s5zaqot2L2fuyD2r9iGsIbXkKbGTiyxdPaQl3x3qZ-wbJWUPLj4Af4MN1URoM-bbrD94W8IgOp6k_CVDgySm7uYmvbMWo3mjoXHbYnY8SA5k-8GVec3uDW-o-p8IjQJsiWnnod8K4nMjHg3BCul4WTxVpfJhqQzRXflhstc818dmzzutGxvy0abmQ5wuC-Q8AcCIpXing6TPrAkyATry_-nQzjeoMGFHWaBByOn-mfk-y7YRgae4FRds3vSWAf5j21Adiuq3BwAE6HUf0VlQ-kVXkKDUorM3lklLpYecXlLW0QQ1GZlDsvKxI83g'
+```  
