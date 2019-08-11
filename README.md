@@ -350,3 +350,1575 @@ The accepted operators: ```lt, lte, gt, gte, eq, neq``` (defaults to ```eq```)
 ```?limit=10&page=5```    
 
 Paginating the response data with the page size of 10 items and get the page 6  
+
+## 5. Build an example API system using laravel-api-buddy and Laravel Passport packages
+
+This example demonstrates how easily & quickly you can build an API system using bkstar123/laravel-api-buddy and protect it using Laravel Passport.  
+
+We will build the following API endpoints:  
+- GET ```/posts```: list all the posts  
+- GET ```/posts/postSlug```: show a post of the given slug  
+- GET ```/posts/postSlug/tags```: list all tags of the given post  
+- GET ```/posts/postSlug/users```: get the owner of a post of the given slug
+- POST ```/posts```: create a new post  
+- PUT ```/posts/postSlug```: update a post of the given slug  
+- DELETE ```/posts/postSlug```: delete a post of the given slug
+
+- GET ```/tags```: list all the tags  
+- GET ```/tags/tagSlug```: show a tag of the given slug  
+- GET ```/tags/tagSlug/posts```: list all posts of the given tag  
+- POST ```/tags```: create a new tag  
+- PUT ```/tags/tagSlug```: update a tag of the given slug  
+- DELETE ```/tags/tagSlug```: delete a tag of the given slug  
+
+- GET ```/users```: list all the users  
+- GET ```/users/email```: show a user  
+- GET ```/users/email/posts```: list all posts of the given user  
+
+### 5.1 Application Scalfolding
+
+Our imaginary system consists of ```users```, ```tags``` and ```posts```. Their relationships are as follows:  
+- A user can create many posts  
+- A post can be created by one user  
+- A tag can be placed on zero or many posts  
+- A post can have zero or multiple tags  
+
+#### 5.1.1 Create posts and tags migrations
+- ```php artisan make:migration create_posts_table --table=posts```  
+- ```php artisan make:migration create_tags_table --table=tags```  
+- Pivot table: ```php artisan make:migration create_post_tag_table --table=post_tag```  
+
+***a) Posts migration***  
+```php
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreatePostsTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('posts', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('title');
+            $table->string('slug');
+            $table->text('content');
+            $table->boolean('published')->default(false);
+            $table->bigInteger('user_id')->unsigned()->index();
+            $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('posts');
+    }
+}
+
+```  
+
+***b) Tags migration***  
+```php
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateTagsTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('tags', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('name');
+            $table->text('description');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('tags');
+    }
+}
+
+```  
+
+***c) Pivot table migration***  
+```php
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreatePostTagTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('post_tag', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->integer('post_id');
+            $table->integer('tag_id');
+            $table->timestamps();
+
+            $table->unique(['post_id', 'tag_id']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('post_tag');
+    }
+}
+
+```  
+
+#### 5.1.2 Migration
+
+Run ```php artisan migrate```  
+
+#### 5.1.3 Create models
+
+***a) User***  
+```php
+<?php
+
+namespace App;
+
+use App\Post;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
+class User extends Authenticatable
+{
+    use Notifiable;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name', 'email', 'password',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'password', 'remember_token',
+    ];
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    public function getRouteKeyName()
+    {
+        return 'email';
+    }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+}
+
+```  
+***b) Post***  
+```php
+<?php
+
+namespace App;
+
+use App\Tag;
+use App\User;
+use Illuminate\Database\Eloquent\Model;
+
+class Post extends Model
+{
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'title', 'slug', 'content', 'user_id'
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+}
+
+```  
+
+***c)Tag***  
+```php
+<?php
+
+namespace App;
+
+use App\Post;
+use Illuminate\Database\Eloquent\Model;
+
+class Tag extends Model
+{
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name', 'description', 'slug',
+    ];
+
+    public function posts()
+    {
+        return $this->belongsToMany(Post::class);
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+}
+
+```
+
+#### 5.1.4 Create factories
+
+***a) PostFactory***  
+```php
+<?php
+
+use Faker\Generator as Faker;
+
+/*
+|--------------------------------------------------------------------------
+| Model Factories
+|--------------------------------------------------------------------------
+|
+| This directory should contain each of the model factory definitions for
+| your application. Factories provide a convenient way to generate new
+| model instances for testing / seeding your application's database.
+|
+*/
+
+$factory->define(App\Post::class, function (Faker $faker) {
+    $title = $faker->sentence;
+
+    return [
+        'user_id' => function() {
+            return factory(App\User::class)->create()->id;
+        },
+        'title' => $title,
+        'slug' => str_slug($title, '-').'-'.time().'-'.mt_rand(0, 100),
+        'published' => $faker->boolean(50),
+        'content' => $faker->paragraph,
+    ];
+});
+
+```  
+
+***b) TagFactory***  
+```php
+<?php
+
+use Faker\Generator as Faker;
+
+/*
+|--------------------------------------------------------------------------
+| Model Factories
+|--------------------------------------------------------------------------
+|
+| This directory should contain each of the model factory definitions for
+| your application. Factories provide a convenient way to generate new
+| model instances for testing / seeding your application's database.
+|
+*/
+
+$factory->define(App\Tag::class, function (Faker $faker) {
+    $name = $faker->sentence(3);
+
+    return [
+        'name' => $name,
+        'slug' => str_slug($name, '-').'-'.time().'-'.mt_rand(0, 100),
+        'description' => $faker->paragraph,
+    ];
+});
+
+```  
+
+***c) UserFactory***  
+```php
+<?php
+
+/** @var \Illuminate\Database\Eloquent\Factory $factory */
+use App\User;
+use Illuminate\Support\Str;
+use Faker\Generator as Faker;
+
+/*
+|--------------------------------------------------------------------------
+| Model Factories
+|--------------------------------------------------------------------------
+|
+| This directory should contain each of the model factory definitions for
+| your application. Factories provide a convenient way to generate new
+| model instances for testing / seeding your application's database.
+|
+*/
+
+$factory->define(User::class, function (Faker $faker) {
+    return [
+        'name' => $faker->name,
+        'email' => $faker->unique()->safeEmail,
+        'email_verified_at' => now(),
+        'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+        'remember_token' => Str::random(10),
+    ];
+});
+
+```  
+
+Finally, populating faked data as follows
+- ```php artisan tinker```   
+- ```factory(App\User::class,5)->create()```  
+- ```factory(App\Post::class,50)->create()```   
+- ```factory(App\Tag::class,10)->create()```  
+
+- ```for ($i = 1; $i <=50;  $i++) {$post = App\Post::all()->random();$tag = App\Tag::all()->random();try {DB::insert('insert into posts_tags (post_id, tag_id) values (?, ?)',[$post->id, $tag->id]);} catch (\Exception $e) {}}``` (populating the pivot table)
+
+
+#### 5.1.5 Authentication scalfolding
+
+- ```php artisan make:auth``` 
+
+### 5.2 Create API endpoints
+
+***Add prefix to API endpoints in routes/api.php***  
+
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| is assigned the "api" middleware group. Enjoy building your API!
+|
+*/
+
+Route::group(['prefix' => 'v1'], function () {
+    // Define API routes here
+});
+```
+
+***Create controllers, resources and transformers***  
+- ```php artisan apibuddy:make PostController --type=controller```  
+- ```php artisan apibuddy:make PostResource --type=resource```  
+- ```php artisan apibuddy:make PostTransformer --type=transformer```  
+
+- ```php artisan apibuddy:make TagController --type=controller```  
+- ```php artisan apibuddy:make TagResource --type=resource```  
+- ```php artisan apibuddy:make TagTransformer --type=transformer```  
+
+- ```php artisan apibuddy:make UserController --type=controller```  
+- ```php artisan apibuddy:make UserResource --type=resource```  
+- ```php artisan apibuddy:make UserTransformer --type=transformer```  
+
+***PostResource***  
+```php
+<?php
+/**
+ * PostResource resource
+ */
+namespace App\Http\Resources;
+
+use Bkstar123\ApiBuddy\Http\Resources\AppResource;
+
+class PostResource extends AppResource
+{
+    /**
+     * Specify the resource mapping
+     *
+     * @return array
+     */
+    protected function resourceMapping()
+    {
+        return [
+            'title' => $this->title,
+            'body' => $this->content,
+            'postSlug' => $this->slug,
+            'visible' => $this->published,
+            'created' => (string) $this->created_at,
+            'updated' => (string) $this->updated_at,
+        ];
+    }
+
+    protected function afterFilter($mapping)
+    {
+        if (!empty($this->slug)) {
+            $mapping = array_merge($mapping, [
+                'links' => [
+                    [
+                        'rel' => 'self',
+                        'href' => route('posts.show', $this->slug),
+                    ],
+                    [
+                        'rel' => 'tags',
+                        'href' => route('post.tags.index', $this->slug),
+                    ],
+                    [
+                        'rel' => 'owner',
+                        'href' => route('post.owner.show', $this->slug),
+                    ],
+                ],
+            ]);
+        }
+
+        return $mapping;
+    }
+}
+```  
+***TagResource***  
+```php
+<?php
+/**
+ * TagResource resource
+ */
+namespace App\Http\Resources;
+
+use Bkstar123\ApiBuddy\Http\Resources\AppResource;
+
+class TagResource extends AppResource
+{
+    /**
+     * Specify the resource mapping
+     *
+     * @return array
+     */
+    protected function resourceMapping()
+    {
+        return [
+            'tag' => $this->name,
+            'description' => $this->description,
+            'tagSlug' => $this->slug,
+            'created' => (string) $this->created_at,
+            'updated' => (string) $this->updated_at,
+        ];
+    }
+
+    protected function afterFilter($mapping)
+    {
+        if (!empty($this->slug)) {
+            $mapping = array_merge($mapping, [
+                'links' => [
+                    [
+                        'rel' => 'self',
+                        'href' => route('tags.show', $this->slug),
+                    ],
+                    [
+                        'rel' => 'posts',
+                        'href' => route('tag.posts.index', $this->slug),
+                    ],
+                ],
+            ]);
+        }
+
+        return $mapping;
+    }
+}
+```  
+
+***UserResource***  
+```php
+<?php
+/**
+ * UserResource resource
+ */
+namespace App\Http\Resources;
+
+use Bkstar123\ApiBuddy\Http\Resources\AppResource;
+
+class UserResource extends AppResource
+{
+    /**
+     * Specify the resource mapping
+     *
+     * @return array
+     */
+    protected function resourceMapping()
+    {
+        return [
+            'user' => $this->name,
+            'mailaddress' => $this->email,
+            'created' => (string) $this->created_at,
+            'updated' => (string) $this->updated_at,
+        ];
+    }
+
+    protected function afterFilter($mapping)
+    {
+        if (!empty($this->email)) {
+            $mapping = array_merge($mapping, [
+                'links' => [
+                    [
+                        'rel' => 'self',
+                        'href' => route('users.show', $this->email),
+                    ],
+                    [
+                        'rel' => 'posts',
+                        'href' => route('user.posts.index', $this->email),
+                    ],
+                ],
+            ]);
+        }
+
+        return $mapping;
+    }
+}
+```  
+
+***PostTransformer***
+```php
+<?php
+/**
+ * PostTransformer transformer
+ */
+namespace App\Transformers;
+
+use Bkstar123\ApiBuddy\Transformers\AppTransformer;
+
+class PostTransformer extends AppTransformer
+{
+    /**
+     * Transformed keys -> Original keys mapping
+     *
+     * @var array
+     */
+    protected static $transformedKeys = [
+        'title' => 'title',
+        'body' => 'content',
+        'postSlug' => 'slug',
+        'visible' => 'published',
+        'created' => 'created_at',
+        'updated' => 'updated_at',
+        'owner' => 'user_id',
+    ];
+}
+```  
+
+***TagTransformer***  
+```php
+<?php
+/**
+ * TagTransformer transformer
+ */
+namespace App\Transformers;
+
+use Bkstar123\ApiBuddy\Transformers\AppTransformer;
+
+class TagTransformer extends AppTransformer
+{
+    /**
+     * Transformed keys -> Original keys mapping
+     *
+     * @var array
+     */
+    protected static $transformedKeys = [
+        'tag' => 'name',
+        'description' => 'description',
+        'tagSlug' => 'slug',
+        'created' => 'created_at',
+        'updated' => 'updated_at'
+    ];
+}
+```  
+
+***UserTransformer***  
+```php
+<?php
+/**
+ * UserTransformer transformer
+ */
+namespace App\Transformers;
+
+use Bkstar123\ApiBuddy\Transformers\AppTransformer;
+
+class UserTransformer extends AppTransformer
+{
+    /**
+     * Transformed keys -> Original keys mapping
+     *
+     * @var array
+     */
+    protected static $transformedKeys = [
+        'user' => 'name',
+        'mailaddress' => 'email',
+        'password' => 'password',
+        'created' => 'created_at',
+        'updated' => 'updated_at'
+    ];
+}
+```  
+
+#### 5.2.1 List all the posts
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::get('posts', 'PostController@getAllPosts')->name('posts.index');
+    // ...
+});
+
+```  
+
+***b) PostController***  
+```php
+<?php
+/**
+ * PostController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\Post;
+use Illuminate\Http\Request;
+use App\Http\Resources\PostResource;
+use App\Transformers\PostTransformer;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class PostController extends Controller
+{
+    // ...
+
+    public function getAllPosts()
+    {
+        return $this->apiResponser->showCollection(Post::getQuery()), PostResource::class, PostTransformer::class);
+    }
+
+    // ...
+}
+```  
+***c) Queries***  
+```bash
+curl -X GET /api/v1/posts
+curl -X GET /api/v1/posts\?limit=10 
+curl -X GET /api/v1/posts\?fields=title,postSlug
+curl -X GET /api/v1/posts\?sort_by=created,-title
+curl -X GET /api/v1/posts\?postSlug=your-post-slug
+curl -X GET /api/v1/posts\?created{lte}=2019-08-10%2019:22:30
+```  
+
+#### 5.2.2 Show a post of the given slug
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::get('posts/{post}', 'PostController@getPost')->name('posts.show');
+    // ...
+});
+
+```  
+
+***b) PostController***  
+```php
+<?php
+/**
+ * PostController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\Post;
+use Illuminate\Http\Request;
+use App\Http\Resources\PostResource;
+use App\Transformers\PostTransformer;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class PostController extends Controller
+{
+    // ...
+
+    public function getPost()
+    {
+        if (empty($post)) {
+            return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
+        }
+        return $this->apiResponser->showInstance($post, PostResource::class);
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X GET /api/v1/posts/{post-slug}
+curl -X GET /api/v1/posts/{post-slug}\?fields=title,postSlug
+```  
+
+#### 5.2.3 List all tags of the given post 
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::get('posts/{post}/tags', 'PostController@getPostTags')->name('post.tags.index');
+    // ...
+});
+
+```  
+
+***b) PostController***  
+```php
+<?php
+/**
+ * PostController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\Post;
+use Illuminate\Http\Request;
+use App\Http\Resources\TagResource;
+use App\Transformers\TagTransformer;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class PostController extends Controller
+{
+    // ...
+
+    public function getPostTags(Post $post)
+    {
+        if (empty($post)) {
+            return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
+        }
+        return $this->apiResponser->showCollection($post->tags()->getQuery(), TagResource::class, TagTransformer::class);
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X GET /api/v1/posts/{post-slug}/tags # you can also apply sorting, filtering, paginating and selecting queries
+```  
+
+#### 5.2.4 Get the owner of a post of the given slug
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::get('posts/{post}/users', 'PostController@getPostOwner')->name('post.owner.show');
+    // ...
+});
+
+```  
+
+***b) PostController***  
+```php
+<?php
+/**
+ * PostController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\Post;
+use Illuminate\Http\Request;
+use App\Http\Resources\UserResource;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class PostController extends Controller
+{
+    // ...
+
+    public function getPostOwner(Post $post)
+    {
+        if (empty($post)) {
+            return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
+        }
+        return $this->apiResponser->showInstance($post->user()->first(), UserResource::class);
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X GET /api/v1/posts/{post-slug}/users # you can also apply selecting query
+```  
+
+#### 5.2.5 Create a new post 
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::post('posts', 'PostController@createPost')->name('posts.create');
+    // ...
+});
+
+```  
+
+***b) PostController***  
+```php
+<?php
+/**
+ * PostController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\Post;
+use Illuminate\Http\Request;
+use App\Http\Resources\PostResource;
+use App\Transformers\PostTransformer;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class PostController extends Controller
+{
+    public function __construct()
+    {
+        parent::__construct();
+        $this->middleware('apibuddy.transform:'. PostTransformer::class)->only('createPost');
+    }
+
+    // ...
+
+    public function createPost(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|min:5|max:255',
+            'content' => 'required|min:5|max:255',
+        ]);
+
+        $postData = request()->all();
+        $postData['user_id'] = 1; // it will later be changed to the current token-based authenticated user
+        $postData['slug'] = str_slug($postData['title'], '-').'-'.time().'-'.mt_rand(0, 100);
+        $post = Post::create($postData);
+        return $this->apiResponser->showInstance($post->fresh(), PostResource::class, 201);
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X POST /api/v1/posts \
+     -H 'Content-Type: application/x-www-form-urlencoded' \
+     -d 'title=New%20Post&body=Very%20nice%20post'
+```  
+
+#### 5.2.6 Update a post of the given slug
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::put('posts/{post}', 'PostController@updatePost')->name('posts.update');
+    // ...
+});
+
+```  
+
+***b) PostController***  
+```php
+<?php
+/**
+ * PostController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\Post;
+use Illuminate\Http\Request;
+use App\Http\Resources\PostResource;
+use App\Transformers\PostTransformer;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class PostController extends Controller
+{
+    public function __construct()
+    {
+        parent::__construct();
+        $this->middleware('apibuddy.transform:'. PostTransformer::class)->only('createPost', 'updatePost');
+    }
+
+    // ...
+
+    public function updatePost(Request $request, Post $post)
+    {
+        if (empty($post)) {
+            return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
+        }
+        $request->validate([
+            'title' => 'min:5|max:255',
+            'content' => 'min:5|max:255',
+        ]);
+        if (empty($request->title) && empty($request->content)) {
+            return $this->apiResponser->successResponse('Nothing to change', 200);
+        }
+        if ($post->update($request->all())) {
+            return $this->apiResponser->showInstance($post->fresh(), PostResource::class, 200);
+        } else {
+            return $this->apiResponser->errorResponse('Unknown error occurred');
+        }
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X PUT /api/v1/posts/{post-slug} \
+     -H 'Content-Type: application/x-www-form-urlencoded' \
+     -d 'title=New%20Post&body=Very%20nice%20post'
+```  
+
+**Note**: You must submit PUT request with the header ```Content-Type: application/x-www-form-urlencoded```  
+
+#### 5.2.7 Delete a post of the given slug
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::delete('posts/{post}', 'PostController@deletePost')->name('posts.destroy');
+    // ...
+});
+
+```  
+
+***b) PostController***  
+```php
+<?php
+/**
+ * PostController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\Post;
+use Illuminate\Http\Request;
+use App\Http\Resources\PostResource;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class PostController extends Controller
+{
+    // ...
+
+    public function deletePost(Request $request, Post $post)
+    {
+        if (empty($post)) {
+            return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
+        }
+        if ($post->delete()) {
+            return $this->apiResponser->successResponse('The resource of the given identificator has been permanently destroyed', 200);
+        }
+
+        return $this->apiResponser->errorResponse('Unknown error occurred');
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X DELETE /api/v1/posts/{post-slug}
+```  
+
+#### 5.2.8 List all the tags
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::get('tags', 'TagController@getAllTags')->name('tages.index');
+    // ...
+});
+
+```  
+
+***b) TagController***  
+```php
+<?php
+/**
+ * TagController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\Tag;
+use Illuminate\Http\Request;
+use App\Http\Resources\TagResource;
+use App\Transformers\TagTransformer;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class TagController extends Controller
+{
+    // ...
+
+    public function getAllTags()
+    {
+        return $this->apiResponser->showCollection(Tag::getQuery(), TagResource::class, TagTransformer::class);
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X GET /api/v1/tags
+curl -X GET /api/v1/tags\?limit=10 
+curl -X GET /api/v1/tags\?fields=tag,tagSlug
+curl -X GET /api/v1/tags\?sort_by=created,-tag
+curl -X GET /api/v1/tags\?tagSlug=your-tag-slug
+curl -X GET /api/v1/tags\?created{lte}=2019-08-10%2019:22:30
+```  
+
+#### 5.2.9 Show a tag of the given slug
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::get('tags/{tag}', 'TagController@getTag')->name('tags.show');
+    // ...
+});
+
+```  
+
+***b) TagController***  
+```php
+<?php
+/**
+ * TagController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\Tag;
+use Illuminate\Http\Request;
+use App\Http\Resources\TagResource;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class TagController extends Controller
+{
+    // ...
+
+    public function getTag(Tag $tag)
+    {
+        if (empty($tag)) {
+            return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
+        }
+        return $this->apiResponser->showInstance($tag, TagResource::class);
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X GET /api/v1/tags/{tag-slug}
+curl -X GET /api/v1/tags/{tag-slug}\?fields=tag,tagSlug
+```  
+
+#### 5.2.10 List all posts of the given tag 
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::get('tags/{tag}/posts', 'TagController@getTagPosts')->name('tag.posts.index');
+    // ...
+});
+
+```  
+
+***b) TagController***  
+```php
+<?php
+/**
+ * TagController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\Tag;
+use Illuminate\Http\Request;
+use App\Http\Resources\PostResource;
+use App\Transformers\PostTransformer;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class TagController extends Controller
+{
+    // ...
+
+    public function getTagPosts(Tag $tag)
+    {
+        if (empty($tag)) {
+            return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
+        }
+        return $this->apiResponser->showCollection($tag->posts()->getQuery(), PostResource::class, PostTransformer::class);
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X GET /api/v1/tags/{tag-slug}/posts # you can also apply sorting, filtering, paginating and selecting queries
+```  
+
+#### 5.2.11 Create a new tag 
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::post('tags', 'TagController@createTag')->name('tags.create');
+    // ...
+});
+
+```  
+
+***b) TagController***  
+```php
+<?php
+/**
+ * TagController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\Tag;
+use Illuminate\Http\Request;
+use App\Http\Resources\TagResource;
+use App\Transformers\TagTransformer;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class TagController extends Controller
+{
+    // ...
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->middleware('apibuddy.transform:'. TagTransformer::class)->only('createTag');
+    }
+
+    public function createTag(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|min:5|max:255',
+            'description' => 'required|min:5|max:255',
+        ]);
+
+        $tagData = request()->all();
+        $tagData['slug'] = str_slug($tagData['name'], '-').'-'.time().'-'.mt_rand(0, 100);
+        $tag = Tag::create($tagData);
+        return $this->apiResponser->showInstance($tag->fresh(), TagResource::class, 201);
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X POST /api/v1/tags \
+     -H 'Content-Type: application/x-www-form-urlencoded' \
+     -d 'tag=New%20Tag&description=Very%20nice%20tag'
+```  
+
+#### 5.2.12 Update a tag of the given slug 
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::put('tags/{tag}', 'TagController@updateTag')->name('tags.update');
+    // ...
+});
+
+```  
+
+***b) TagController***  
+```php
+<?php
+/**
+ * TagController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\Tag;
+use Illuminate\Http\Request;
+use App\Http\Resources\TagResource;
+use App\Transformers\TagTransformer;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class TagController extends Controller
+{
+    // ...
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->middleware('apibuddy.transform:'. TagTransformer::class)->only('createTag', 'updateTag');
+    }
+
+    public function updateTag(Request $request, Tag $tag)
+    {
+        if (empty($tag)) {
+            return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
+        }
+        $request->validate([
+            'name' => 'min:5|max:255',
+            'description' => 'min:5|max:255',
+        ]);
+        if (empty($request->name) && empty($request->description)) {
+            return $this->apiResponser->successResponse('Nothing to change', 200);
+        }
+        if ($tag->update($request->all())) {
+            return $this->apiResponser->showInstance($tag->fresh(), TagResource::class, 200);
+        } else {
+            return $this->apiResponser->errorResponse('Unknown error occurred');
+        }
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X PUT /api/v1/tags/{tag-slug} \
+     -H 'Content-Type: application/x-www-form-urlencoded' \
+     -d 'tag=New%20Tag&description=Very%20nice%20tag'
+```  
+
+**Note**: You must submit PUT request with the header ```Content-Type: application/x-www-form-urlencoded```  
+
+#### 5.2.13 Delete a tag of the given slug
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::delete('tags/{tag}', 'TagController@deleteTag')->name('tags.destroy');
+    // ...
+});
+
+```  
+
+***b) TagController***  
+```php
+<?php
+/**
+ * TagController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\Tag;
+use Illuminate\Http\Request;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class TagController extends Controller
+{
+    // ...
+
+    public function deleteTag(Request $request, Tag $tag)
+    {
+        if (empty($tag)) {
+            return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
+        }
+        if ($tag->delete()) {
+            return $this->apiResponser->successResponse('The resource of the given identificator has been permanently destroyed', 200);
+        }
+
+        return $this->apiResponser->errorResponse('Unknown error occurred');
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X DELETE /api/v1/tags/{tag-slug}
+```  
+
+#### 5.2.14 List all the users 
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::get('users', 'UserController@getAllUsers')->name('users.index');
+    // ...
+});
+
+```  
+
+***b) UserController***  
+```php
+<?php
+/**
+ * UserController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\User;
+use Illuminate\Http\Request;
+use App\Http\Resources\UserResource;
+use App\Transformers\UserTransformer;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class UserController extends Controller
+{
+    // ...
+
+    public function getAllUsers()
+    {
+        return $this->apiResponser->showCollection(User::getQuery(), UserResource::class, UserTransformer::class);
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X GET /api/v1/users
+curl -X GET /api/v1/users\?limit=10 
+curl -X GET /api/v1/users\?fields=name,mailaddress
+curl -X GET /api/v1/users\?sort_by=created,-name
+curl -X GET /api/v1/users\?mailaddress=yourmail@example.com
+curl -X GET /api/v1/users\?created{lte}=2019-08-10%2019:22:30
+```  
+
+#### 5.2.15 Show a user 
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::get('users/{user}', 'UserController@getUser')->name('users.show');
+    // ...
+});
+
+```  
+
+***b) UserController***  
+```php
+<?php
+/**
+ * UserController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\User;
+use Illuminate\Http\Request;
+use App\Http\Resources\UserResource;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class UserController extends Controller
+{
+    // ...
+
+    public function getUser(User $user)
+    {
+        if (empty($user)) {
+            return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
+        }
+        return $this->apiResponser->showInstance($user, UserResource::class);
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X GET /api/v1/users/{email}
+curl -X GET /api/v1/users/{email}\?fields=name,mailaddress
+```  
+
+#### 5.2.16 List all posts of the given user 
+
+***a) Define API endpoint***  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+Route::group(['prefix' => 'v1'], function () {
+    // ...
+    Route::get('users/{user}/posts', 'UserController@getUserPosts')->name('user.posts.index');
+    // ...
+});
+
+```  
+
+***b) UserController***  
+```php
+<?php
+/**
+ * UserController API controller
+ */
+namespace App\Http\Controllers;
+
+use App\User;
+use Illuminate\Http\Request;
+use App\Http\Resources\PostResource;
+use App\Transformers\PostTransformer;
+use Bkstar123\ApiBuddy\Http\Controllers\ApiController as Controller;
+
+class UserController extends Controller
+{
+    // ...
+
+     public function getUserPosts(User $user)
+    {
+        if (empty($user)) {
+            return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
+        }
+        return $this->apiResponser->showCollection($user->posts()->getQuery(), PostResource::class, PostTransformer::class);
+    }
+
+    // ...
+}
+```  
+
+***c) Queries***  
+```bash
+curl -X GET /api/v1/users/{email}/posts # you can also apply sorting, filtering, paginating and selecting queries
+```  
+
+### 5.3 Protect your API endpoints with Laravel Passport
+
+- To be written
