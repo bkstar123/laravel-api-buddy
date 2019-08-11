@@ -357,19 +357,19 @@ This example demonstrates how easily & quickly you can build an API system using
 
 We will build the following API endpoints:  
 - GET ```/posts```: list all the posts  
-- GET ```/posts/postSlug```: show a post of the given slug  
-- GET ```/posts/postSlug/tags```: list all tags of the given post  
-- GET ```/posts/postSlug/users```: get the owner of a post of the given slug
+- GET ```/posts/post-slug```: show a post of the given slug  
+- GET ```/posts/post-slug/tags```: list all tags of the given post  
+- GET ```/posts/post-slug/users```: get the owner of a post of the given slug
 - POST ```/posts```: create a new post  
-- PUT ```/posts/postSlug```: update a post of the given slug  
-- DELETE ```/posts/postSlug```: delete a post of the given slug
+- PUT ```/posts/post-slug```: update a post of the given slug  
+- DELETE ```/posts/post-slug```: delete a post of the given slug
 
 - GET ```/tags```: list all the tags  
-- GET ```/tags/tagSlug```: show a tag of the given slug  
-- GET ```/tags/tagSlug/posts```: list all posts of the given tag  
+- GET ```/tags/tag-slug```: show a tag of the given slug  
+- GET ```/tags/tag-slug/posts```: list all posts of the given tag  
 - POST ```/tags```: create a new tag  
-- PUT ```/tags/tagSlug```: update a tag of the given slug  
-- DELETE ```/tags/tagSlug```: delete a tag of the given slug  
+- PUT ```/tags/tag-slug```: update a tag of the given slug  
+- DELETE ```/tags/tag-slug```: delete a tag of the given slug  
 
 - GET ```/users```: list all the users  
 - GET ```/users/email```: show a user  
