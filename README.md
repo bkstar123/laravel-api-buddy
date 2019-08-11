@@ -743,7 +743,7 @@ Finally, populating faked data as follows
 - ```factory(App\Post::class,50)->create()```   
 - ```factory(App\Tag::class,10)->create()```  
 
-- ```for ($i = 1; $i <=50;  $i++) {$post = App\Post::all()->random();$tag = App\Tag::all()->random();try {DB::insert('insert into posts_tags (post_id, tag_id) values (?, ?)',[$post->id, $tag->id]);} catch (\Exception $e) {}}``` (populating the pivot table)
+- ```for ($i = 1; $i <=50;  $i++) {$post = App\Post::all()->random();$tag = App\Tag::all()->random();try {DB::insert('insert into post_tag (post_id, tag_id) values (?, ?)',[$post->id, $tag->id]);} catch (\Exception $e) {}}``` (populating the pivot table)
 
 
 #### 5.1.5 Authentication scalfolding
