@@ -234,19 +234,6 @@ class UserTransformer extends AppTransformer
         'lastChanged' => 'updated_at',
         'password' => 'password'
     ];
-
-    /**
-     * Original keys -> Transformed keys mapping
-     *
-     * @var array
-     */
-    protected static $originalKeys = [
-        'name' => 'fullname',
-        'email' => 'mailaddress',
-        'created_at' => 'creationDate',
-        'updated_at' => 'lastChanged',
-        'password' => 'password'
-    ];
 }
 ```
 

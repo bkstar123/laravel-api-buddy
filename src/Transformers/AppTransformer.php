@@ -19,13 +19,6 @@ class AppTransformer implements Transformer
     protected static $transformedKeys;
 
     /**
-     * Original keys -> Transformed keys mapping
-     *
-     * @var array
-     */
-    protected static $originalKeys;
-
-    /**
      * Convert a given transformed attribute to its original
      *
      * @param string $index
@@ -46,7 +39,7 @@ class AppTransformer implements Transformer
      */
     public static function transformedAttribute($index)
     {
-        $attributes = static::$originalKeys;
+        $attributes = array_flip(static::$transformedKeys);
 
         return isset($attributes[$index]) ? $attributes[$index] : null;
     }

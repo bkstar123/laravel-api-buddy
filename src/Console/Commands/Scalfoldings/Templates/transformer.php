@@ -25,15 +25,6 @@ class $name extends AppTransformer
     protected static \$transformedKeys = [
         //'transformed_key' => 'original_key'
     ];
-
-    /**
-     * Original keys -> Transformed keys mapping
-     *
-     * @var array
-     */
-    protected static \$originalKeys = [
-        //'original_key' => 'transformed_key'
-    ];
 }
 END;
 
