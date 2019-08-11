@@ -1404,6 +1404,7 @@ class PostController extends Controller
         if (empty($post)) {
             return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
         }
+        $post->tags()->detach();
         if ($post->delete()) {
             return $this->apiResponser->successResponse('The resource of the given identificator has been permanently destroyed', 200);
         }
@@ -1748,6 +1749,7 @@ class TagController extends Controller
         if (empty($tag)) {
             return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
         }
+        $tag->posts()->detach();
         if ($tag->delete()) {
             return $this->apiResponser->successResponse('The resource of the given identificator has been permanently destroyed', 200);
         }
