@@ -1983,7 +1983,7 @@ protected $routeMiddleware = [
 
 Then, use ```client```middleware to protect your required API routes or controller methods.  
 
-&ndash; ```CheckClientCredentials::class``` provides the lowest level of protection, it only verifies the client itself but does not care about the client owner's perspective. So, this middleware is suitable for machine-to-machine authentication. For example, you might use this grant in a scheduled job which is performing maintenance tasks over an API.  
+&ndash; ```CheckClientCredentials::class``` provides the lowest level of protection, it only verifies the client itself but does not care about the client owner's perspective. So, this middleware is suitable for machine-to-machine authentication. For example, you might use this grant type in a scheduled job which is performing maintenance tasks over an API. This grant type can be used for any client, however, it is recommended to create a dedicated client with ```php artisan passport:client --client```because this client does not need to represent any user.  
 
 &ndash; ```auth:api```not only verifies the client, but also its owner's perspective. Therefore, this middleware is suitable for verifying a human authentication.  
 
@@ -2016,12 +2016,10 @@ Route::group(['prefix' => 'v1'], function () {
     Route::get('posts/{post}/tags', 'PostController@getPostTags')->name('post.tags.index')->middleware('client');
     Route::get('posts/{post}/users', 'PostController@getPostOwner')->name('post.owner.show')->middleware('client');
     
-
     Route::get('tags', 'TagController@getAllTags')->name('tages.index')->middleware('client');
     Route::get('tags/{tag}', 'TagController@getTag')->name('tags.show')->middleware('client');
     Route::get('tags/{tag}/posts', 'TagController@getTagPosts')->name('tag.posts.index')->middleware('client');
     
-
     Route::get('users', 'UserController@getAllUsers')->name('users.index')->middleware('client');
     Route::get('users/{user}', 'UserController@getUser')->name('users.show')->middleware('client');
     Route::get('users/{user}/posts', 'UserController@getUserPosts')->name('user.posts.index')->middleware('client');
@@ -2042,4 +2040,59 @@ curl -X POST /oauth/token \
 
 curl -X GET /api/v1/tags \
   -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImM3NGVjZTVmMmJlZTQyM2Q2ZmE5NDBmYjhkODkxOTkxNWU4OGI2YmZjMTQ4NmYyYzQzZWU0YThlYzc2ZTNlYTE4MWNjZDgwNmE1ZDQ0MDc3In0.eyJhdWQiOiIxIiwianRpIjoiYzc0ZWNlNWYyYmVlNDIzZDZmYTk0MGZiOGQ4OTE5OTE1ZTg4YjZiZmMxNDg2ZjJjNDNlZTRhOGVjNzZlM2VhMTgxY2NkODA2YTVkNDQwNzciLCJpYXQiOjE1NjU1MTkzNzUsIm5iZiI6MTU2NTUxOTM3NSwiZXhwIjoxNTY2ODE1Mzc1LCJzdWIiOiIiLCJzY29wZXMiOltdfQ.ba-YHda7qk0awO4wMX2FId1c29a-WKNTbsMLMjfDgl2cgus6sJB1Q-FDZOKVZ6cXiQXqmMfp4H_QFfwMGo4RIltARzx93QND3G8Q7pVCQESJw1eK2cKAAAXSHo0-ooS33t0GpAUM1_IYv9VsoMiWc2MkD2xTwl0Z1nMhLwgxJ5_bruVgotZi11O5zXL9xTfGkB6t9OTrAWoqCZ8JT89VR-gUwBhB5vCGCDIXXTWzxFAMjpzC3N9wB-VeS1-FWnjNd_qGPMP2eTBKqbHrARgGbjnSO8CQwQGpHxpegDcT06KB5l6QxqEXJD5iRkmmZ6q6uNuGoPy-PhEMbYwzcsYGAatsBRCGAfP5yfSoy2fWD01Jw62s5zaqot2L2fuyD2r9iGsIbXkKbGTiyxdPaQl3x3qZ-wbJWUPLj4Af4MN1URoM-bbrD94W8IgOp6k_CVDgySm7uYmvbMWo3mjoXHbYnY8SA5k-8GVec3uDW-o-p8IjQJsiWnnod8K4nMjHg3BCul4WTxVpfJhqQzRXflhstc818dmzzutGxvy0abmQ5wuC-Q8AcCIpXing6TPrAkyATry_-nQzjeoMGFHWaBByOn-mfk-y7YRgae4FRds3vSWAf5j21Adiuq3BwAE6HUf0VlQ-kVXkKDUorM3lklLpYecXlLW0QQ1GZlDsvKxI83g'
+```  
+
+##### 5.3.2.2 Using auth:api middleware
+
+This section will demonstrate how to use ```auth:api``` middleware to protect all POST, PUT and DELETE API routes, as follows:  
+```php
+<?php
+
+use Illuminate\Http\Request;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| is assigned the "api" middleware group. Enjoy building your API!
+|
+*/
+
+// Route::middleware('auth:api')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
+
+Route::group(['prefix' => 'v1'], function () {
+    Route::post('posts', 'PostController@createPost')->name('posts.create')->middleware('auth:api');
+    Route::put('posts/{post}', 'PostController@updatePost')->name('posts.update')->middleware('auth:api');
+    Route::delete('posts/{post}', 'PostController@deletePost')->name('posts.destroy')->middleware('auth:api');
+
+    Route::post('tags', 'TagController@createTag')->name('tags.create')->middleware('auth:api');
+    Route::put('tags/{tag}', 'TagController@updateTag')->name('tags.update')->middleware('auth:api');
+    Route::delete('tags/{tag}', 'TagController@deleteTag')->name('tags.destroy')->middleware('auth:api');
+});
+```  
+
+&ndash; The above API routes cannot be accessed by client credentials grant type access tokens like **5.3.2.1**.  
+
+&ndash; Instead, you will need to get a token of one of the following types, and send the received token with every request to the above endpoints:  
+- ***Password grant type***<sup>(2)</sup>  
+- ***Authorization code grant type***<sup>(3)</sup>  
+- ***Implicit grant type***<sup>(4)</sup>  
+- ***Refresh token grant type***<sup>(5)</sup>  
+- ***Personal access grant type***<sup>(6)</sup>  
+
+***a) Password grant type access token***
+
+```bash
+curl -X POST /oauth/token \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'client_id=2&client_secret=zCAzHbVRbcQFaWRSH4SEN8IU189ieiGCzbHdyaU7&grant_type=password&username=aiden15%40example.net&password=password'
+
+curl -X POST /api/v1/posts \
+  -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImE4MGI3M2JlNzcyNjg5NTRlMTg3ZWRmZDQ2ZGZjYjE2NjJkODg4OTMxM2VhMzE0MzJhYWIyNzBjMTQ4ZjhlMDNmZWM1ZmI2NGY1N2FmNGFjIn0.eyJhdWQiOiIyIiwianRpIjoiYTgwYjczYmU3NzI2ODk1NGUxODdlZGZkNDZkZmNiMTY2MmQ4ODg5MzEzZWEzMTQzMmFhYjI3MGMxNDhmOGUwM2ZlYzVmYjY0ZjU3YWY0YWMiLCJpYXQiOjE1NjU1NzQyODEsIm5iZiI6MTU2NTU3NDI4MSwiZXhwIjoxNTY2ODcwMjgxLCJzdWIiOiIxIiwic2NvcGVzIjpbXX0.UAgSA7fWGL4fLlOCjo9Kl0KauhKB72lFFsFS_fvsxlsvCyUUmnUamsJXVPQVGjkZ1dk-uKKYsUZYXZe9dWLQoOocqoyn9K0syaAIpDE2bfWFjHrc45CtHyQ_DYi6OctVvphiXl6LHqu4b_vLqMMoKtlTQZuxV9M8eIw2bn8VCxKl5EGMq9kmcaBlorvOD_va3VQN1_uh1zk_j4C5Xdx39l1S_SbvA7fdLWVChIY7Bzgos_iTryfbd8nsyxATkB28i5dz_0RQtm_E56RR3bhSrtwJwMGXolQZd4INhN89F4C4rxp-8I6jU7S5ZGOGFWA04qYnwBQtWYdD12VPAYNFbVsFt4NXnWNqibG92w4LpSJcM5ofO2Jx8EbChTf9TfhZspUntMfrYO9epXKMldOL_U5Cr3lPtByJ7shxIfz1OgDo353jNAUHTQBjT_eC_GO0tu7hBycKv1v-28s4JbxQqfrz1-hOSnDbduKNITxn1zt1LNTvqtNjC0AoNo7DgwjAgRk1kdcPl1LqIxHcClii5goVmWBSk00N3HjfdI5JxVPoMcKTn71H9Ite5ZWPeC_iFNT0OpbyDVg8v_AW9YCt69dQvDCB_xLtReBON67OurihQqbrp5X2r-MMSfGy0gWW4b9e0CgX4GGwlWJzmQFpRmbn0JUvo4YoYMtBKX9w0Mo' \
+  -d 'title=Hello%20world&body=Hello%2C%20my%20name%20is%20Antony%20H'
 ```  
