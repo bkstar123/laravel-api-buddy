@@ -1969,8 +1969,8 @@ public function boot()
 #### 5.3.2 Secure API routes
 
 There are two middleware that you can use to secure API routes:  
-- ```auth:api```  
-- ```Laravel\Passport\Http\Middleware\CheckClientCredentials```  
+- **```auth:api```**    
+- **```Laravel\Passport\Http\Middleware\CheckClientCredentials```**    
 
 The latter can be use by placing an alias to the ```$routeMiddleware``` property of your ```app/Http/Kernel.php``` file:  
 ```php
@@ -1983,9 +1983,9 @@ protected $routeMiddleware = [
 
 Then, use ```client```middleware to protect your required API routes or controller methods.  
 
--- ```CheckClientCredentials::class``` provides the lowest level of protection, it only verifies the client itself but does not care about the client owner's perspective. So, this middleware is suitable for machine-to-machine authentication. For example, you might use this grant in a scheduled job which is performing maintenance tasks over an API.  
+&ndash; ```CheckClientCredentials::class``` provides the lowest level of protection, it only verifies the client itself but does not care about the client owner's perspective. So, this middleware is suitable for machine-to-machine authentication. For example, you might use this grant in a scheduled job which is performing maintenance tasks over an API.  
 
--- ```auth:api```not only verifies the client, but also its owner's perspective. Therefore, this middleware is suitable for verifying a human authentication.  
+&ndash; ```auth:api```not only verifies the client, but also its owner's perspective. Therefore, this middleware is suitable for verifying a human authentication.  
 
 ##### 5.3.2.1 Using CheckClientCredentials::class middleware
 
@@ -2030,9 +2030,9 @@ Route::group(['prefix' => 'v1'], function () {
 });
 ```  
 
--- After that, you will no longer be able to access the above endpoints like ```curl -X GET /api/v1/tags```  
+&ndash; After that, you will no longer be able to access the above endpoints like ```curl -X GET /api/v1/tags```  
 
--- Instead, you will need to get the ***client credentials grant type***<sup>(1)</sup> access token, and send the received token with every request to the above endpoints  
+&ndash; Instead, you will need to get the ***client credentials grant type***<sup>(1)</sup> access token, and send the received token with every request to the above endpoints  
 
 ```bash
 curl -X POST /oauth/token \
