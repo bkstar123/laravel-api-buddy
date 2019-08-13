@@ -1,7 +1,7 @@
 # laravel-api-buddy     
 > This lightweight Laravel package provides a powerful and simple toolset for quickly building high-quality RESTful API web services for Eloquent model resources with several advanced features such as schema transformation as well as sorting, filtering, selecting and paginating. Using together with the Laravel Passport package, you can have a full-fledge API system ready to serve any clients in a matter of minutes.  
 
-**Note**: This is not a silver bullet to solve all API problems, for example: it does not support ```grouping```, ```having``` queries   
+**Note**: This is not a silver bullet to solve all API problems, for example: it does not support ```grouping```, ```having``` queries. It does not “apifyies” your model resources out of the box, it is just your buddy to build a powerful API system as quickly as possible. There are many rooms for you to personalize your API design, laravel-api-buddy makes your journey easier, more comfortable and saves you from doing some boilerplate coding.  
 
 ## 1 Requirements  
 
@@ -1983,7 +1983,7 @@ protected $routeMiddleware = [
 
 Then, use ```client```middleware to protect your required API routes or controller methods.  
 
-&ndash; ```CheckClientCredentials::class``` provides the lowest level of protection, it only verifies the client itself but does not care about the client owner's perspective. So, this middleware is suitable for machine-to-machine authentication. For example, you might use this grant type in a scheduled job which is performing maintenance tasks over an API. This grant type can be used for any client, however, it is recommended to create a dedicated client with ```php artisan passport:client --client```because this client does not need to represent any user.  
+&ndash; ```CheckClientCredentials::class``` provides the lowest level of protection, it only verifies the client itself and does not care about the client owner's perspective. So, this middleware is suitable for machine-to-machine authentication. For example, you might use this grant type in a scheduled job which is performing maintenance tasks over an API. This grant type can be used for any client, however, it is recommended to create a dedicated client with ```php artisan passport:client --client```because this client does not need to represent any user.  
 
 &ndash; ```auth:api```not only verifies the client, but also its owner's perspective. Therefore, this middleware is suitable for verifying a human authentication.  
 
@@ -2085,7 +2085,11 @@ Route::group(['prefix' => 'v1'], function () {
 - ***Refresh token grant type***<sup>(5)</sup>  
 - ***Personal access grant type***<sup>(6)</sup>  
 
-***a) Password grant type access token***
+**Note**: ```(2), (3), (4), (5), (6)``` grant type access tokens can also access the API routes protected by ```CheckClientCredentials::class``` middleware.  
+
+***a) Password grant type access token***  
+
+Password grant allows your other first-party clients, such as a mobile application, to obtain an access token using an e-mail address/username and password. This allows you to issue access tokens securely to your first-party clients without requiring your users to go through the entire OAuth2 authorization code redirect flow.  
 
 ```bash
 curl -X POST /oauth/token \
@@ -2096,3 +2100,14 @@ curl -X POST /api/v1/posts \
   -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImE4MGI3M2JlNzcyNjg5NTRlMTg3ZWRmZDQ2ZGZjYjE2NjJkODg4OTMxM2VhMzE0MzJhYWIyNzBjMTQ4ZjhlMDNmZWM1ZmI2NGY1N2FmNGFjIn0.eyJhdWQiOiIyIiwianRpIjoiYTgwYjczYmU3NzI2ODk1NGUxODdlZGZkNDZkZmNiMTY2MmQ4ODg5MzEzZWEzMTQzMmFhYjI3MGMxNDhmOGUwM2ZlYzVmYjY0ZjU3YWY0YWMiLCJpYXQiOjE1NjU1NzQyODEsIm5iZiI6MTU2NTU3NDI4MSwiZXhwIjoxNTY2ODcwMjgxLCJzdWIiOiIxIiwic2NvcGVzIjpbXX0.UAgSA7fWGL4fLlOCjo9Kl0KauhKB72lFFsFS_fvsxlsvCyUUmnUamsJXVPQVGjkZ1dk-uKKYsUZYXZe9dWLQoOocqoyn9K0syaAIpDE2bfWFjHrc45CtHyQ_DYi6OctVvphiXl6LHqu4b_vLqMMoKtlTQZuxV9M8eIw2bn8VCxKl5EGMq9kmcaBlorvOD_va3VQN1_uh1zk_j4C5Xdx39l1S_SbvA7fdLWVChIY7Bzgos_iTryfbd8nsyxATkB28i5dz_0RQtm_E56RR3bhSrtwJwMGXolQZd4INhN89F4C4rxp-8I6jU7S5ZGOGFWA04qYnwBQtWYdD12VPAYNFbVsFt4NXnWNqibG92w4LpSJcM5ofO2Jx8EbChTf9TfhZspUntMfrYO9epXKMldOL_U5Cr3lPtByJ7shxIfz1OgDo353jNAUHTQBjT_eC_GO0tu7hBycKv1v-28s4JbxQqfrz1-hOSnDbduKNITxn1zt1LNTvqtNjC0AoNo7DgwjAgRk1kdcPl1LqIxHcClii5goVmWBSk00N3HjfdI5JxVPoMcKTn71H9Ite5ZWPeC_iFNT0OpbyDVg8v_AW9YCt69dQvDCB_xLtReBON67OurihQqbrp5X2r-MMSfGy0gWW4b9e0CgX4GGwlWJzmQFpRmbn0JUvo4YoYMtBKX9w0Mo' \
   -d 'title=Hello%20world&body=Hello%2C%20my%20name%20is%20Antony%20H'
 ```  
+
+***b) Authorization code grant type access token***  
+
+For the third-party applications that want to use your APIs, they need to go through an OAUTH2 flow with authorization code. You may be familiar with this process when implementing social login feature via Facebook, Twitter, Google etc...  
+
+Our flow here is the same:  
+- **Step 1**: The third party owner/developer needs to register an account with your application  
+- **Step 2**: You must provide a dashboard allowing the third party owner/developer to create a client associated with his account (created in step 1). Creating this client requires the third party owner/developer to provide a callback URL  
+- **Step 3**: Then, the third party application redirects a user to your application where the user can approve/deny the request to issue an access token to the client  
+- **Step 4**: If the user approves the request, then your application should return an authorization code and redirect the user to the third party's callback URL (as provided in step 2)  
+- **Step 5**: The third party application will use the given authorization code to exchange for an access token. This token represents for an user of your application who approves the request in step 4. It has a capability to do whatever the user can do in your application, you can limit this capability by applying token scopes (authorization)  
