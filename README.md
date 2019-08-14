@@ -2110,4 +2110,59 @@ Our flow here is the same:
 - **Step 2**: You must provide a dashboard allowing the third party owner/developer to create a client associated with his account (created in step 1). Creating this client requires the third party owner/developer to provide a callback URL  
 - **Step 3**: Then, the third party application redirects a user to your application where the user can approve/deny the request to issue an access token to the client  
 - **Step 4**: If the user approves the request, then your application should return an authorization code and redirect the user to the third party's callback URL (as provided in step 2)  
-- **Step 5**: The third party application will use the given authorization code to exchange for an access token. This token represents for an user of your application who approves the request in step 4. It has a capability to do whatever the user can do in your application, you can limit this capability by applying token scopes (authorization)  
+- **Step 5**: The third party application will use the given authorization code to exchange for an access token. This token represents an user of your application who approves the request in step 4. It has a capability to do whatever the user can do in your application, you can limit this capability by applying token scopes (authorization)  
+
+Passport provides JSON APIs out of the box for managing clients, you will need to build your own front-end to allow users to create/remove clients & customize the Passport view for approval/denial of the authorization request.  
+
+For the purpose of quick demonstration, we will create clients from the command line for our local testing, as follows:  
+
+&ndash; ```php artisan passport:client```  
+
+Supposing we create client for the user aiden15@example.net (id = 1), then we will give the following inputs:  
+```bash
+Which user ID should the client be assigned to?:
+ > 1
+
+ What should we name the client?:
+ > Authorization Code Grant Type Client
+
+ Where should we redirect the request after authorization? [http://testproject.acme.com/auth/callback]:
+ > http://thirdparty.acme.com/callback
+
+New client created successfully.
+Client ID: 4
+Client secret: 1JsWFAAOMg36yaPBwaYU15XuZbPrIgKaz4u5cNrA
+
+```  
+
+Where aiden15@example.net (id = 1) is the account that the third party's developer/owner created at your application (as step 1 above)  
+
+&ndash; On browser, visit the link http://testproject.acme.com/oauth/authorize?client_id=4&redirect_uri=http://thirdparty.acme.com/callback&response_type=code (this simulates the action when a user is being redirected to your server ```/oauth/authorize``` by the third party application)  
+
+&ndash; If the user does not have an authenticated session with your server, then a login page will be displayed for him (supposing that the user enter ```gswaniawski@example.net / password``` to login to your application)  
+
+&ndash; If the user have an authentication session with your server, then a view will be displayed for him to approve/deny the authorization request  
+
+&ndash; After approving the request, the user who has just logged in to your application with ```gswaniawski@example.net / password``` will be redirected back to the third party application at the following URL:  
+
+http://thirdparty.acme.com/callback?code=def50200b978d55c2d335b85aa4ee6b2930ef63f1e79d55c684c6cc85f4ecce793524ffbef863a9dd15318fe833d8f9a0b62b22bb3d78aa5a78c28e1090d6067e913b2c3299c9e49dcdfd99b0499767e827e1a56b8a5cd8a1cdbe6c13e5b00febe6ce3f2b0bdf74b5704c9be6c5a677fd80cf1bdcf481f9e1c8c1960cbb96580ca60c79082337f78e17787671d03b5e6fa7ea665689f9da41002122e48ca0b78e46716ce272626a3c2eff8d0116b7bdaa4f34905641ffc4ba5688aaf5fef133f544d7bc078c85a49bd303df629cf606c619641c9d8d030321c20d0b70871449c19d9ebee9a56b9a087b94cfdacf7b1cbe45c231229772a43bb41d2edc4166aebf815770012d0c67dee55b853d92e68e7b4c16b27ff7269d539f4f71dbf77904c816f624755dc0e8b12643cb4df38d37acde1ec74b11ca05a2aeed60be79a5f62e924839f0013b3d1720346321c064450bab138b056c2c45ccb0029e7b9fc41f9886c27a120 
+
+As you can see, your application provides an authorization code back to the third party application at their supplied ```redirect_uri``` http://thirdparty.acme.com/callback  
+
+&ndash; Now, the third party application can use the provided authorization code to exchange an access token which represents the user gswaniawski@example.net (id = 2) of your application, as follows:  
+```bash
+curl -X POST /oauth/token \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'client_id=4&client_secret=1JsWFAAOMg36yaPBwaYU15XuZbPrIgKaz4u5cNrA&grant_type=authorization_code&redirect_uri=http%3A%2F%2Fthirdparty.acme.com%2Fcallback&code=def50200b978d55c2d335b85aa4ee6b2930ef63f1e79d55c684c6cc85f4ecce793524ffbef863a9dd15318fe833d8f9a0b62b22bb3d78aa5a78c28e1090d6067e913b2c3299c9e49dcdfd99b0499767e827e1a56b8a5cd8a1cdbe6c13e5b00febe6ce3f2b0bdf74b5704c9be6c5a677fd80cf1bdcf481f9e1c8c1960cbb96580ca60c79082337f78e17787671d03b5e6fa7ea665689f9da41002122e48ca0b78e46716ce272626a3c2eff8d0116b7bdaa4f34905641ffc4ba5688aaf5fef133f544d7bc078c85a49bd303df629cf606c619641c9d8d030321c20d0b70871449c19d9ebee9a56b9a087b94cfdacf7b1cbe45c231229772a43bb41d2edc4166aebf815770012d0c67dee55b853d92e68e7b4c16b27ff7269d539f4f71dbf77904c816f624755dc0e8b12643cb4df38d37acde1ec74b11ca05a2aeed60be79a5f62e924839f0013b3d1720346321c064450bab138b056c2c45ccb0029e7b9fc41f9886c27a120'
+
+
+# Received response
+{
+    "token_type": "Bearer",
+    "expires_in": 1296000,
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjlkMWJhZjhjZTE5ZTViZWNlY2RiYzRmMGI3NjNhZjU2NmE2ZDYwYjlmNWI3ODcwOTdlYWJkNTUxYzhmM2NmNWMwN2VkMDE0NDZhODNhZjNkIn0.eyJhdWQiOiI0IiwianRpIjoiOWQxYmFmOGNlMTllNWJlY2VjZGJjNGYwYjc2M2FmNTY2YTZkNjBiOWY1Yjc4NzA5N2VhYmQ1NTFjOGYzY2Y1YzA3ZWQwMTQ0NmE4M2FmM2QiLCJpYXQiOjE1NjU3NDY0MDcsIm5iZiI6MTU2NTc0NjQwNywiZXhwIjoxNTY3MDQyNDA3LCJzdWIiOiIyIiwic2NvcGVzIjpbXX0.KeoWqAnopDObPtCkFDU5ofVWEmnRk0nRh6eGXl1M4xNn8wVA12xBd0fDMmnnqrXLxa2fAIEn0BINxWNUCV6t4pTq23B4X0jADvkRXIXAUDZp95dfKsJgnho2zNSDnK4pVfOPSe-LtC4N5Dcr9F2yjA7xsF1UAryC_B6nFYSbhZ61scCsQaKiJ5KKleJavCWMS4cbUfSS_ZCKXslasGWsPrjdr3mChIi9JZcJOyH_dT5cj9flajYiEMxMpPM4sJaH0wWWt6McIPggVagm4qtSs5W8Fww0jPkf2bZemtRp1rFdzTEqngc8LW5xIHMP9VJtWh5MvXoLPMwl2hDIZDbkWDctwyV8VrYmxbQHdghRhAEg3y0VMiGoKWzZ3d8M7KbZEg32jfnt2MY0A64bH0vZWgCZYTJiHPRbLdldIAG54r5n1j0Nq91Z_xqKG7eYzpdiooL96yZQO7jyym9ozLFqyuL0SPXOWu2ozCsUwnf_vdhQBXFEw8GB3VQc6I5rv5Q8DSorjX1NHuG2R04NIZtd3RhzxWnwyjPReEbfFmegvuXtzFeRb93lg_yTUVh1tm13_6awwHtEqWZe404j7JnqyphN42UfSc649Kc9ZLnzUAKQI3PHUjaPFu0GgG8s3Gamad60sj5qPNrGd5D9ZdnqoG-Yoe3LXk1MB_RnASjYVgE",
+    "refresh_token": "def502005a0d09f8789ac22e48438f8d0f3ee4c8bc8dde941606809fca292918f68770bca3463ed31fe55e21705de1f13c4033dbd9f7015264d3c0cdefed2aa6a2496bc62041c29b0fa8ef6737773d647a6ca318a117fd4eabd9ba0a896f1e61760f061cebaec25e078a0d8cc0723f7b91de16db9598790720d47bddcafdab415a9b6dc568e3ebe283ca80c1f15cead9a6c180c563ad81b9960f4a9e3ad97dd8c1b383d39aab9479bc496a6ff04a65ad72d291ba5ea1d74ea330b2c6819da91d1d2385d56f3dceca8890773b20a77841d3b7e70b32e3c259437a5d49c568b4a0f02e2bc400d2085487cf8ba77409d0b546e27ffdb75e7449047f4282da242b1023c5b40815155318ca51fdce44014762dee8efbc15d2525250a00c18bb870a4a73997db5258a7a747ca1304c1ba12398861524f638835422027e36c8efacd20d801274872bbf207249aea48a4498c065d48a8f0ab485bcc33e1e9ffd01f2985dd2"
+}
+```  
+
+At this point, we can say that a user of the third party application, who also has an account at your application with the email of gswaniawski@example.net (id = 2), has given an access token to a client created by the third party's developer/owner at your application. The third party's developer/owner also has an account at your application with email aiden15@example.net (id = 1). Using the access token, the client can act on behalf of the user gswaniawski@example.net within your application without knowing his password.  
