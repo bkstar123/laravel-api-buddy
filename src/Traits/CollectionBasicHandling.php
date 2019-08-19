@@ -9,6 +9,8 @@ namespace Bkstar123\ApiBuddy\Traits;
 
 use Exception;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 trait CollectionBasicHandling
 {
@@ -47,6 +49,7 @@ trait CollectionBasicHandling
             'eq' => '='
         ];
         $reservedQueries = ['sort_by', 'limit', 'fields', 'page'];
+        $tableName = $this->getTableName($builder);
         foreach (request()->query() as $query => $value) {
             if (!in_array($query, $reservedQueries)) {
                 if (isset($query, $value)) {
@@ -60,7 +63,7 @@ trait CollectionBasicHandling
                     if (config('bkstar123_apibuddy.useTransform') && !empty($transformerClass)) {
                         $query = $transformerClass::originalAttribute($query);
                     }
-                    is_null($query) ?: $builder = $builder->where($query, $opMapping[$opKey], $value);
+                    is_null($query) ?: $builder = $builder->where($tableName.'.'.$query, $opMapping[$opKey], $value);
                 }
             }
         }
@@ -77,13 +80,14 @@ trait CollectionBasicHandling
         if (request()->filled('sort_by')) {
             $sortCols = request()->input('sort_by');
             $sortCols = explode(',', $sortCols);
+            $tableName = $this->getTableName($builder);
             foreach ($sortCols as $sortCol) {
                 $order = starts_with($sortCol, '-') ? 'desc' : 'asc';
                 $sortCol = ltrim($sortCol, '-');
                 if (config('bkstar123_apibuddy.useTransform') && !empty($transformerClass)) {
                     $sortCol = $transformerClass::originalAttribute($sortCol);
                 }
-                is_null($sortCol) ?: $builder = $builder->orderBy($sortCol, $order);
+                is_null($sortCol) ?: $builder = $builder->orderBy($tableName.'.'.$sortCol, $order);
             }
         }
         return $builder;
@@ -99,12 +103,32 @@ trait CollectionBasicHandling
             if (request()->filled('fields')) {
                 $fields = request()->input('fields');
                 $fields = explode(',', $fields);
+                $tableName = $this->getTableName($builder);
                 foreach ($fields as $field) {
-                    $builder = $builder->addSelect(trim($field));
+                    $builder = $builder->addSelect($tableName.'.'.trim($field));
                 }
             }
         }
         // In case of using transformation, field selection is done via the transformation
         return $builder;
+    }
+    
+    /**
+     * @param  \EloquentBuilder|\QueryBuilder  $builder
+     * @return  mixed string|null
+     */
+    final private function getTableName($builder)
+    {
+        switch (get_class($builder)) {
+            case EloquentBuilder::class:
+                return $builder->getQuery()->from;
+                break;
+            case QueryBuilder::class:
+                return $builder->from;
+                break;
+            default:
+                return null;
+                break;
+        }
     }
 }
