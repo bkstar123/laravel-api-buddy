@@ -24,7 +24,7 @@ class AppTransformer implements Transformer
      * @param string $index
      * @return string|null
      */
-    public static function originalAttribute($index)
+    public static function originalAttribute(string $index)
     {
         $attributes = static::$transformedKeys;
 
@@ -37,7 +37,7 @@ class AppTransformer implements Transformer
      * @param string $index
      * @return string|null
      */
-    public static function transformedAttribute($index)
+    public static function transformedAttribute(string $index)
     {
         $attributes = array_flip(static::$transformedKeys);
 

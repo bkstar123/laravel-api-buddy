@@ -15,7 +15,7 @@ interface Transformer
      * @param string $index
      * @return string|null
      */
-    public static function originalAttribute($index);
+    public static function originalAttribute(string $index);
 
     /**
      * Convert a original attribute to its transformed version
@@ -23,5 +23,5 @@ interface Transformer
      * @param string $index
      * @return string|null
      */
-    public static function transformedAttribute($index);
+    public static function transformedAttribute(string $index);
 }

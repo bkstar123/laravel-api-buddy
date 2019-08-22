@@ -8,6 +8,7 @@
 namespace Bkstar123\ApiBuddy\Contracts;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 interface ApiResponsible
 {
@@ -32,12 +33,12 @@ interface ApiResponsible
     /**
      * Show a collection of resources
      *
-     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
+     * @param  \Illuminate\Database\Eloquent\Builder $builder
      * @param  string $apiResource
      * @param  string $transformerClass
      * @return  \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\JsonResponse
      */
-    public function showCollection($builder, $apiResource = '', $transformerClass = '');
+    public function showCollection(Builder $builder, string $apiResource = '', string $transformerClass = '');
 
     /**
      * Show a resource instance
@@ -47,5 +48,5 @@ interface ApiResponsible
      * @param  int $code
      * @return  \Illuminate\Http\JsonResponse
      */
-    public function showInstance(Model $instance, $apiResource = '', $code = 200) : \Illuminate\Http\JsonResponse;
+    public function showInstance(Model $instance, string $apiResource = '', int $code = 200) : \Illuminate\Http\JsonResponse;
 }

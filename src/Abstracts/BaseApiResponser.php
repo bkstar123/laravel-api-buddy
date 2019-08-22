@@ -8,6 +8,7 @@
 namespace Bkstar123\ApiBuddy\Abstracts;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Bkstar123\ApiBuddy\Contracts\ApiResponsible;
 use Bkstar123\ApiBuddy\Contracts\ResourceCollectionProcessable;
 
@@ -52,12 +53,12 @@ abstract class BaseApiResponser implements ApiResponsible
     }
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
+     * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @param  string $apiResource
      * @param  string $transformerClass
      * @return  \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\JsonResponse
      */
-    abstract public function showCollection($builder, $apiResource = '', $transformerClass = '');
+    abstract public function showCollection(Builder $builder, string $apiResource = '', string $transformerClass = '');
 
     /**
      * @param \Illuminate\Database\Eloquent\Model  $instance
@@ -65,5 +66,5 @@ abstract class BaseApiResponser implements ApiResponsible
      * @param  int $code
      * @return  \Illuminate\Http\JsonResponse
      */
-    abstract public function showInstance(Model $instance, $apiResource = '', $code = 200) : \Illuminate\Http\JsonResponse;
+    abstract public function showInstance(Model $instance, string $apiResource = '', int $code = 200) : \Illuminate\Http\JsonResponse;
 }

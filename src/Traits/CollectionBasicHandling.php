@@ -8,17 +8,16 @@
 namespace Bkstar123\ApiBuddy\Traits;
 
 use Exception;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Database\Query\Builder as QueryBuilder;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 trait CollectionBasicHandling
 {
     /**
-     * @param  \EloquentBuilder|\QueryBuilder  $builder
+     * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    public function paginateData($builder) : \Illuminate\Pagination\LengthAwarePaginator
+    public function paginateData(Builder $builder) : \Illuminate\Pagination\LengthAwarePaginator
     {
         if (request()->filled('limit')) {
             $rules = [
@@ -33,11 +32,11 @@ trait CollectionBasicHandling
     }
 
     /**
-     * @param  \EloquentBuilder|\QueryBuilder  $builder
+     * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @param  string $transformerClass
-     * @return \EloquentBuilder|\QueryBuilder
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function filterData($builder, $transformerClass = '')
+    public function filterData(Builder $builder, string $transformerClass = '')
     {
         $validOpKeys = ['gt', 'gte', 'lt', 'lte', 'neq', 'eq'];
         $opMapping = [
@@ -71,11 +70,11 @@ trait CollectionBasicHandling
     }
 
     /**
-     * @param  \EloquentBuilder|\QueryBuilder  $builder
+     * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @param  string $transformerClass
-     * @return \EloquentBuilder|\QueryBuilder
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function sortData($builder, $transformerClass = '')
+    public function sortData(Builder $builder, string $transformerClass = '')
     {
         if (request()->filled('sort_by')) {
             $sortCols = request()->input('sort_by');
@@ -94,10 +93,10 @@ trait CollectionBasicHandling
     }
 
     /**
-     * @param  \EloquentBuilder|\QueryBuilder  $builder
-     * @return \EloquentBuilder|\QueryBuilder
+     * @param  \Illuminate\Database\Eloquent\Builder  $builder
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function selectFields($builder)
+    public function selectFields(Builder $builder)
     {
         if (!config('bkstar123_apibuddy.useTransform')) {
             if (request()->filled('fields')) {
@@ -114,21 +113,11 @@ trait CollectionBasicHandling
     }
     
     /**
-     * @param  \EloquentBuilder|\QueryBuilder  $builder
+     * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @return  mixed string|null
      */
-    final private function getTableName($builder)
+    final private function getTableName(Builder $builder)
     {
-        switch (get_class($builder)) {
-            case EloquentBuilder::class:
-                return $builder->getQuery()->from;
-                break;
-            case QueryBuilder::class:
-                return $builder->from;
-                break;
-            default:
-                return null;
-                break;
-        }
+        return $builder->getQuery()->from;
     }
 }

@@ -8,16 +8,17 @@
 namespace Bkstar123\ApiBuddy\Abstracts;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Bkstar123\ApiBuddy\Contracts\ResourceCollectionProcessable;
 
 abstract class ResourceCollectionProcessor implements ResourceCollectionProcessable
 {
     /**
-     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
+     * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @param  string  $transformerClass
      * @return  \Illuminate\Pagination\LengthAwarePaginator
      */
-    public function processCollection($builder, $transformerClass = '') : \Illuminate\Pagination\LengthAwarePaginator
+    public function processCollection(Builder $builder, string $transformerClass = '') : \Illuminate\Pagination\LengthAwarePaginator
     {
         $builder =  $this->filterData($builder, $transformerClass);
         $builder =  $this->sortData($builder, $transformerClass);
@@ -39,28 +40,28 @@ abstract class ResourceCollectionProcessor implements ResourceCollectionProcessa
     }
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
+     * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @param  string $transformerClass
-     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    abstract public function filterData($builder, $transformerClass = '');
+    abstract public function filterData(Builder $builder, string $transformerClass = '');
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
+     * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @param  string $transformerClass
-     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    abstract public function sortData($builder, $transformerClass = '');
+    abstract public function sortData(Builder $builder, string $transformerClass = '');
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
-     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     * @param  \Illuminate\Database\Eloquent\Builder  $builder
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    abstract public function selectFields($builder);
+    abstract public function selectFields(Builder $builder);
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
+     * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    abstract public function paginateData($builder) : \Illuminate\Pagination\LengthAwarePaginator;
+    abstract public function paginateData(Builder $builder) : \Illuminate\Pagination\LengthAwarePaginator;
 }
