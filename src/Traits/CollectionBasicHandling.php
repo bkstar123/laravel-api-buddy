@@ -47,7 +47,7 @@ trait CollectionBasicHandling
             'neq' => '<>',
             'eq' => '='
         ];
-        $reservedQueries = ['sort_by', 'limit', 'fields', 'page'];
+        $reservedQueries = ['sort_by', 'limit', 'fields', 'page', 'embed'];
         $tableName = $this->getTableName($builder);
         foreach (request()->query() as $query => $value) {
             if (!in_array($query, $reservedQueries)) {
@@ -99,7 +99,7 @@ trait CollectionBasicHandling
     public function selectFields(Builder $builder)
     {
         if (!config('bkstar123_apibuddy.useTransform')) {
-            if (request()->filled('fields')) {
+            if (request()->method() === 'GET' && request()->filled('fields')) {
                 $fields = request()->input('fields');
                 $fields = explode(',', $fields);
                 $tableName = $this->getTableName($builder);

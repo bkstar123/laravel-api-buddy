@@ -18,7 +18,7 @@ trait ResourceMappingFilter
      */
     protected function filterMapping($mapping)
     {
-        if (request()->filled('fields')) {
+        if (request()->method() === 'GET' && request()->filled('fields')) {
             $fields = request()->input('fields');
             $fields = explode(',', $fields);
             $fields = collect($fields)->filter(function ($field, $key) use ($mapping) {
