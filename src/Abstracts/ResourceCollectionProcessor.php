@@ -35,7 +35,7 @@ abstract class ResourceCollectionProcessor implements ResourceCollectionProcessa
         if (config('bkstar123_apibuddy.useTransform')) {
             return $instance;
         }
-        $builder = $instance->getQuery();
+        $builder = $instance->query();
         return $this->selectFields($builder)->where('id', $instance->id)->first();
     }
 
