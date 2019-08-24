@@ -47,7 +47,7 @@ trait CollectionBasicHandling
             'neq' => '<>',
             'eq' => '='
         ];
-        $reservedQueries = ['sort_by', 'limit', 'fields', 'page', 'embed'];
+        $reservedQueries = ['sort_by', 'limit', 'fields', 'page'];
         $tableName = $this->getTableName($builder);
         foreach (request()->query() as $query => $value) {
             if (!in_array($query, $reservedQueries)) {
