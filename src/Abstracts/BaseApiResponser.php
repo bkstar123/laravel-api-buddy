@@ -36,7 +36,7 @@ abstract class BaseApiResponser implements ApiResponsible
      */
     public function errorResponse($errors, int $status = 500) : JsonResponse
     {
-        return response()->json(['errors' => $errors, 'code' => $status], $status);
+        return response()->json(['errors' => $errors, 'code' => $status, 'success' => false], $status);
     }
 
     /**
@@ -47,10 +47,12 @@ abstract class BaseApiResponser implements ApiResponsible
     public function successResponse($data, int $status = 200) : JsonResponse
     {
         if (is_array($data) && array_key_exists('data', $data)) {
+            $data['code'] = $status;
+            $data['success'] = true;
             return response()->json($data, $status);
         }
 
-        return response()->json(['data' => $data], $status);
+        return response()->json(['data' => $data, 'code' => $status, 'success' => true], $status);
     }
 
     /**
