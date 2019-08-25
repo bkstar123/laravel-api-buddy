@@ -50,6 +50,7 @@ trait CollectionBasicHandling
         ];
         $reservedQueries = ['sort_by', 'limit', 'fields', 'page'];
         $tableName = $this->getTableName($builder);
+        $tableColumns = $builder->getConnection()->getSchemaBuilder()->getColumnListing($tableName);
         foreach (request()->query() as $query => $value) {
             if (!in_array($query, $reservedQueries)) {
                 if (isset($query, $value)) {
@@ -63,7 +64,7 @@ trait CollectionBasicHandling
                     if (config('bkstar123_apibuddy.useTransform') && !empty($transformerClass)) {
                         $query = $transformerClass::originalAttribute($query);
                     }
-                    is_null($query) ?: $builder = $builder->where($tableName.'.'.$query, $opMapping[$opKey], $value);
+                    is_null($query) || !in_array($query, $tableColumns) ?: $builder = $builder->where($tableName.'.'.$query, $opMapping[$opKey], $value);
                 }
             }
         }
@@ -81,13 +82,14 @@ trait CollectionBasicHandling
             $sortCols = request()->input('sort_by');
             $sortCols = explode(',', $sortCols);
             $tableName = $this->getTableName($builder);
+            $tableColumns = $builder->getConnection()->getSchemaBuilder()->getColumnListing($tableName);
             foreach ($sortCols as $sortCol) {
                 $order = starts_with($sortCol, '-') ? 'desc' : 'asc';
                 $sortCol = ltrim($sortCol, '-');
                 if (config('bkstar123_apibuddy.useTransform') && !empty($transformerClass)) {
                     $sortCol = $transformerClass::originalAttribute($sortCol);
                 }
-                is_null($sortCol) ?: $builder = $builder->orderBy($tableName.'.'.$sortCol, $order);
+                is_null($sortCol) || !in_array($sortCol, $tableColumns) ?: $builder = $builder->orderBy($tableName.'.'.$sortCol, $order);
             }
         }
         return $builder;
@@ -104,8 +106,10 @@ trait CollectionBasicHandling
                 $fields = request()->input('fields');
                 $fields = explode(',', $fields);
                 $tableName = $this->getTableName($builder);
+                $tableColumns = $builder->getConnection()->getSchemaBuilder()->getColumnListing($tableName);
                 foreach ($fields as $field) {
-                    $builder = $builder->addSelect($tableName.'.'.trim($field));
+                    $field = trim($field);
+                    !in_array($field, $tableColumns) ?: $builder = $builder->addSelect($tableName . '.' . $field);
                 }
             }
         }
