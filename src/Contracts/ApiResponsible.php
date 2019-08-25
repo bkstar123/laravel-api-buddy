@@ -39,9 +39,11 @@ interface ApiResponsible
      * @param  string $transformerClass
      * @return \Illuminate\Http\JsonResponse
      */
-    public function showCollection(Builder $builder, 
-        string $apiResource = '', 
-        string $transformerClass = '') : JsonResponse;
+    public function showCollection(
+        Builder $builder,
+        string $apiResource = '',
+        string $transformerClass = ''
+    ) : JsonResponse;
 
     /**
      * Show a resource instance
@@ -52,8 +54,10 @@ interface ApiResponsible
      * @param  int $code
      * @return  \Illuminate\Http\JsonResponse
      */
-    public function showInstance(Model $instance, 
-        string $apiResource = '', 
-        string $transformerClass = '', 
-        int $code = 200) : JsonResponse;
+    public function showInstance(
+        Model $instance,
+        string $apiResource = '',
+        string $transformerClass = '',
+        int $code = 200
+    ) : JsonResponse;
 }
