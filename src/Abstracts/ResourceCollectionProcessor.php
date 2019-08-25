@@ -44,20 +44,20 @@ abstract class ResourceCollectionProcessor implements ResourceCollectionProcessa
      * @param  string $transformerClass
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    abstract public function filterData(Builder $builder, string $transformerClass = '');
+    abstract public function filterData(Builder $builder, string $transformerClass = '') : \Illuminate\Database\Eloquent\Builder;
 
     /**
      * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @param  string $transformerClass
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    abstract public function sortData(Builder $builder, string $transformerClass = '');
+    abstract public function sortData(Builder $builder, string $transformerClass = '') : \Illuminate\Database\Eloquent\Builder;
 
     /**
      * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    abstract public function selectFields(Builder $builder);
+    abstract public function selectFields(Builder $builder) : \Illuminate\Database\Eloquent\Builder;
 
     /**
      * @param  \Illuminate\Database\Eloquent\Builder  $builder

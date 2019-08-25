@@ -36,7 +36,7 @@ trait CollectionBasicHandling
      * @param  string $transformerClass
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function filterData(Builder $builder, string $transformerClass = '')
+    public function filterData(Builder $builder, string $transformerClass = '') : \Illuminate\Database\Eloquent\Builder
     {
         $validOpKeys = ['gt', 'gte', 'lt', 'lte', 'neq', 'eq'];
         $opMapping = [
@@ -74,7 +74,7 @@ trait CollectionBasicHandling
      * @param  string $transformerClass
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function sortData(Builder $builder, string $transformerClass = '')
+    public function sortData(Builder $builder, string $transformerClass = '') : \Illuminate\Database\Eloquent\Builder
     {
         if (request()->filled('sort_by')) {
             $sortCols = request()->input('sort_by');
@@ -96,7 +96,7 @@ trait CollectionBasicHandling
      * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function selectFields(Builder $builder)
+    public function selectFields(Builder $builder) : \Illuminate\Database\Eloquent\Builder
     {
         if (!config('bkstar123_apibuddy.useTransform')) {
             if (request()->method() === 'GET' && request()->filled('fields')) {
@@ -114,9 +114,9 @@ trait CollectionBasicHandling
     
     /**
      * @param  \Illuminate\Database\Eloquent\Builder  $builder
-     * @return  mixed string|null
+     * @return  string
      */
-    final private function getTableName(Builder $builder)
+    final private function getTableName(Builder $builder) : string
     {
         return $builder->getQuery()->from;
     }
