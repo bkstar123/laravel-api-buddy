@@ -289,7 +289,7 @@ class UserController extends Controller
 
 ```
 
-For some requests that modify the state of resource such as POST (creating new instance), PUT & PATCH (updating an existing instance), you will need to use ```'apibuddy.transform'``` middleware which are automatically registered with the Laravel IoC container by the package. This middleware only requires an argument which is the fully qualify name of the transform class (in the above example, it should be ```App\Transformers\UserTransformer```). This middleware converts user inputs to their corresponding original database table column names & vice versa in case of validation error.  
+For some requests that modify the state of resource such as POST (creating new instance), PUT & PATCH (updating an existing instance), you will need to use ```'apibuddy.transform'``` middleware which are automatically registered with the Laravel IoC container by the package. This middleware only requires an argument which is the fully qualified name of the transform class (in the above example, it should be ```App\Transformers\UserTransformer```), and it converts user inputs to their corresponding original database table column names & vice versa in case of validation errors.  
 
 
 ### 4.4 CORS enabling
