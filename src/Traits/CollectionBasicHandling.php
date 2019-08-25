@@ -10,6 +10,7 @@ namespace Bkstar123\ApiBuddy\Traits;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 trait CollectionBasicHandling
 {
@@ -17,7 +18,7 @@ trait CollectionBasicHandling
      * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    public function paginateData(Builder $builder) : \Illuminate\Pagination\LengthAwarePaginator
+    public function paginateData(Builder $builder) : LengthAwarePaginator
     {
         if (request()->filled('limit')) {
             $rules = [
@@ -36,7 +37,7 @@ trait CollectionBasicHandling
      * @param  string $transformerClass
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function filterData(Builder $builder, string $transformerClass = '') : \Illuminate\Database\Eloquent\Builder
+    public function filterData(Builder $builder, string $transformerClass = '') : Builder
     {
         $validOpKeys = ['gt', 'gte', 'lt', 'lte', 'neq', 'eq'];
         $opMapping = [
@@ -74,7 +75,7 @@ trait CollectionBasicHandling
      * @param  string $transformerClass
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function sortData(Builder $builder, string $transformerClass = '') : \Illuminate\Database\Eloquent\Builder
+    public function sortData(Builder $builder, string $transformerClass = '') : Builder
     {
         if (request()->filled('sort_by')) {
             $sortCols = request()->input('sort_by');
@@ -96,7 +97,7 @@ trait CollectionBasicHandling
      * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function selectFields(Builder $builder) : \Illuminate\Database\Eloquent\Builder
+    public function selectFields(Builder $builder) : Builder
     {
         if (!config('bkstar123_apibuddy.useTransform')) {
             if (request()->method() === 'GET' && request()->filled('fields')) {

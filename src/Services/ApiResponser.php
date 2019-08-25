@@ -8,6 +8,7 @@
 namespace Bkstar123\ApiBuddy\Services;
 
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Bkstar123\ApiBuddy\Abstracts\BaseApiResponser;
@@ -20,9 +21,9 @@ class ApiResponser extends BaseApiResponser
      * @param \Illuminate\Database\Eloquent\Builder  $builder
      * @param  string $apiResource
      * @param  string $transformerClass
-     * @return  \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function showCollection(Builder $builder, string $apiResource = '', string $transformerClass = '')
+    public function showCollection(Builder $builder, string $apiResource = '', string $transformerClass = '') : JsonResponse
     {
         if (config('bkstar123_apibuddy.useTransform')) {
             if (!is_subclass_of($apiResource, AppResource::class)) {
@@ -33,7 +34,7 @@ class ApiResponser extends BaseApiResponser
                 throw new Exception('The third argument passed to the showCollection() method of the class '
                       . get_class(). ' must be a sub-class of '. AppTransformer::class);
             }
-            return $apiResource::collection($this->processor->processCollection($builder, $transformerClass));
+            return $apiResource::collection($this->processor->processCollection($builder, $transformerClass))->response();
         } else {
             return $this->successResponse($this->processor->processCollection($builder)->toArray());
         }
@@ -45,7 +46,7 @@ class ApiResponser extends BaseApiResponser
      * @param  int $code
      * @return  \Illuminate\Http\JsonResponse
      */
-    public function showInstance(Model $instance, string $apiResource = '', int $code = 200) : \Illuminate\Http\JsonResponse
+    public function showInstance(Model $instance, string $apiResource = '', int $code = 200) : JsonResponse
     {
         if (config('bkstar123_apibuddy.useTransform')) {
             if (!is_subclass_of($apiResource, AppResource::class)) {
@@ -54,6 +55,6 @@ class ApiResponser extends BaseApiResponser
             }
             return $this->successResponse(new $apiResource($this->processor->processInstance($instance)), $code);
         }
-        return $this->successResponse($this->processor->processInstance($instance));
+        return $this->successResponse($this->processor->processInstance($instance), $code);
     }
 }

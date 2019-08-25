@@ -7,6 +7,7 @@
  */
 namespace Bkstar123\ApiBuddy\Abstracts;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Bkstar123\ApiBuddy\Contracts\ApiResponsible;
@@ -33,7 +34,7 @@ abstract class BaseApiResponser implements ApiResponsible
      * @param  int  $status
      * @return \Illuminate\Http\JsonResponse
      */
-    public function errorResponse($errors, int $status = 500) : \Illuminate\Http\JsonResponse
+    public function errorResponse($errors, int $status = 500) : JsonResponse
     {
         return response()->json(['errors' => $errors, 'code' => $status], $status);
     }
@@ -43,7 +44,7 @@ abstract class BaseApiResponser implements ApiResponsible
      * @param  int  $status
      * @return \Illuminate\Http\JsonResponse
      */
-    public function successResponse($data, int $status = 200) : \Illuminate\Http\JsonResponse
+    public function successResponse($data, int $status = 200) : JsonResponse
     {
         if (is_array($data) && array_key_exists('data', $data)) {
             return response()->json($data, $status);
@@ -56,9 +57,9 @@ abstract class BaseApiResponser implements ApiResponsible
      * @param  \Illuminate\Database\Eloquent\Builder  $builder
      * @param  string $apiResource
      * @param  string $transformerClass
-     * @return  \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\JsonResponse
+     * @return  \Illuminate\Http\JsonResponse
      */
-    abstract public function showCollection(Builder $builder, string $apiResource = '', string $transformerClass = '');
+    abstract public function showCollection(Builder $builder, string $apiResource = '', string $transformerClass = '') : JsonResponse;
 
     /**
      * @param \Illuminate\Database\Eloquent\Model  $instance
@@ -66,5 +67,5 @@ abstract class BaseApiResponser implements ApiResponsible
      * @param  int $code
      * @return  \Illuminate\Http\JsonResponse
      */
-    abstract public function showInstance(Model $instance, string $apiResource = '', int $code = 200) : \Illuminate\Http\JsonResponse;
+    abstract public function showInstance(Model $instance, string $apiResource = '', int $code = 200) : JsonResponse;
 }

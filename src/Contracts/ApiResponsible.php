@@ -7,6 +7,7 @@
  */
 namespace Bkstar123\ApiBuddy\Contracts;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -19,7 +20,7 @@ interface ApiResponsible
      * @param  int  $status
      * @return \Illuminate\Http\JsonResponse
      */
-    public function errorResponse($errors, int $status = 500) : \Illuminate\Http\JsonResponse;
+    public function errorResponse($errors, int $status = 500) : JsonResponse;
 
     /**
      * Send success response in JSON format
@@ -28,7 +29,7 @@ interface ApiResponsible
      * @param  int  $status
      * @return \Illuminate\Http\JsonResponse
      */
-    public function successResponse($data, int $status = 200) : \Illuminate\Http\JsonResponse;
+    public function successResponse($data, int $status = 200) : JsonResponse;
     
     /**
      * Show a collection of resources
@@ -36,9 +37,9 @@ interface ApiResponsible
      * @param  \Illuminate\Database\Eloquent\Builder $builder
      * @param  string $apiResource
      * @param  string $transformerClass
-     * @return  \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function showCollection(Builder $builder, string $apiResource = '', string $transformerClass = '');
+    public function showCollection(Builder $builder, string $apiResource = '', string $transformerClass = '') : JsonResponse;
 
     /**
      * Show a resource instance
@@ -48,5 +49,5 @@ interface ApiResponsible
      * @param  int $code
      * @return  \Illuminate\Http\JsonResponse
      */
-    public function showInstance(Model $instance, string $apiResource = '', int $code = 200) : \Illuminate\Http\JsonResponse;
+    public function showInstance(Model $instance, string $apiResource = '', int $code = 200) : JsonResponse;
 }

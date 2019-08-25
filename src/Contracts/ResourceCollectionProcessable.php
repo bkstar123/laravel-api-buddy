@@ -9,6 +9,7 @@ namespace Bkstar123\ApiBuddy\Contracts;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 interface ResourceCollectionProcessable
 {
@@ -19,11 +20,11 @@ interface ResourceCollectionProcessable
      * @param  string  $transformerClass
      * @return  \Illuminate\Pagination\LengthAwarePaginator
      */
-    public function processCollection(Builder $builder, string $transformerClass = '') : \Illuminate\Pagination\LengthAwarePaginator;
+    public function processCollection(Builder $builder, string $transformerClass = '') : LengthAwarePaginator;
 
     /**
      * @param  \Illuminate\Database\Eloquent\Model  $instance
-     * @return  mixed
+     * @return  \Illuminate\Database\Eloquent\Model
      */
-    public function processInstance(Model $instance);
+    public function processInstance(Model $instance) : Model;
 }
