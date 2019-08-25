@@ -52,7 +52,7 @@ All API controllers extending ```ApiController``` have access to the property **
      * @param  int  $status
      * @return \Illuminate\Http\JsonResponse
      */
-    public function errorResponse($errors, int $status = 500) : \Illuminate\Http\JsonResponse;
+    public function errorResponse($errors, int $status = 500) : JsonResponse;
 
     /**
      * Send success response in JSON format
@@ -61,17 +61,17 @@ All API controllers extending ```ApiController``` have access to the property **
      * @param  int  $status
      * @return \Illuminate\Http\JsonResponse
      */
-    public function successResponse($data, int $status = 200) : \Illuminate\Http\JsonResponse;
+    public function successResponse($data, int $status = 200) : JsonResponse;
     
     /**
      * Show a collection of resources
      *
-     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $builder
+     * @param  \Illuminate\Database\Eloquent\Builder $builder
      * @param  string $apiResource
      * @param  string $transformerClass
-     * @return  \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function showCollection($builder, $apiResource = '', $transformerClass = '');
+    public function showCollection(Builder $builder, string $apiResource = '', string $transformerClass = '') : JsonResponse;
 
     /**
      * Show a resource instance
@@ -81,7 +81,7 @@ All API controllers extending ```ApiController``` have access to the property **
      * @param  int $code
      * @return  \Illuminate\Http\JsonResponse
      */
-    public function showInstance(Model $instance, $apiResource = '', $code = 200) : \Illuminate\Http\JsonResponse;
+    public function showInstance(Model $instance, string $apiResource = '', int $code = 200) : JsonResponse;
 ```
 
 - **```showCollection()```**: is to return a collection of model resources in JSON with some features such as sorting, filtering, column selecting and paginating  
@@ -90,12 +90,12 @@ All API controllers extending ```ApiController``` have access to the property **
 - **```errorResponse()```**: is to return a generic error JSOn response  
 
 Where:
-- **```$builder```**: either ```\Illuminate\Database\Eloquent\Builder``` or ```\Illuminate\Database\Query\Builder```.  
+- **```$builder```**: is an instance of ```\Illuminate\Database\Eloquent\Builder```    
 Example:  
 ```php
 <?php
-$eloquentBuilder = User::getQuery();
-$queryBuilder = DB::table('users');
+$eloquentBuilder = User::query();
+$eloquentBuilder = $post->tags()->getQuery();
 
 // You can further add more query scope or modifying the builder before passing it to showCollection()
 ```
@@ -123,7 +123,7 @@ class UserController extends Controller
 {
     public function index()
     {
-    	return $this->apiResponser->showCollection(User::getQuery());
+    	return $this->apiResponser->showCollection(User::query());
     }
 
     public function showUser(User $user)
@@ -264,7 +264,7 @@ class UserController extends Controller
     {
         $transformerClass = UserTransformer::class;
         $apiResource = UsersResource::class;
-        return $this->apiResponser->showCollection(User::getQuery(), $apiResource, $transformerClass);
+        return $this->apiResponser->showCollection(User::query(), $apiResource, $transformerClass);
     }
 
     public function showUser(User $user)
@@ -284,7 +284,7 @@ class UserController extends Controller
         ]);
         $user = User::create($request->all());
         $apiResource = UsersResource::class;
-        return $this->apiResponser->showInstance($user, $apiResource, 201);
+        return $this->apiResponser->showInstance($user->fresh(), $apiResource, 201);
     }
 }
 
