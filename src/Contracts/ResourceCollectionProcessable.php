@@ -24,7 +24,8 @@ interface ResourceCollectionProcessable
 
     /**
      * @param  \Illuminate\Database\Eloquent\Model  $instance
+     * @param  string  $transformerClass
      * @return  \Illuminate\Database\Eloquent\Model
      */
-    public function processInstance(Model $instance) : Model;
+    public function processInstance(Model $instance, string $transformerClass = '') : Model;
 }

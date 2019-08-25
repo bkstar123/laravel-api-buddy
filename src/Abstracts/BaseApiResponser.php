@@ -51,7 +51,6 @@ abstract class BaseApiResponser implements ApiResponsible
             $data['success'] = true;
             return response()->json($data, $status);
         }
-
         return response()->json(['data' => $data, 'code' => $status, 'success' => true], $status);
     }
 
@@ -61,13 +60,19 @@ abstract class BaseApiResponser implements ApiResponsible
      * @param  string $transformerClass
      * @return  \Illuminate\Http\JsonResponse
      */
-    abstract public function showCollection(Builder $builder, string $apiResource = '', string $transformerClass = '') : JsonResponse;
+    abstract public function showCollection(Builder $builder, 
+        string $apiResource = '', 
+        string $transformerClass = '') : JsonResponse;
 
     /**
      * @param \Illuminate\Database\Eloquent\Model  $instance
      * @param  string $apiResource
+     * @param  string $transformerClass
      * @param  int $code
      * @return  \Illuminate\Http\JsonResponse
      */
-    abstract public function showInstance(Model $instance, string $apiResource = '', int $code = 200) : JsonResponse;
+    abstract public function showInstance(Model $instance, 
+        string $apiResource = '', 
+        string $transformerClass = '',
+        int $code = 200) : JsonResponse;
 }

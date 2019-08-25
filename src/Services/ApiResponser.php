@@ -29,11 +29,11 @@ class ApiResponser extends BaseApiResponser
         if (config('bkstar123_apibuddy.useTransform')) {
             if (!is_subclass_of($apiResource, AppResource::class)) {
                 throw new Exception('The second argument passed to the showCollection() method of the class '
-                      . get_class(). ' must be a sub-class of '. AppResource::class);
+                    . get_class(). ' must be a sub-class of '. AppResource::class);
             }
             if (!is_subclass_of($transformerClass, AppTransformer::class)) {
                 throw new Exception('The third argument passed to the showCollection() method of the class '
-                      . get_class(). ' must be a sub-class of '. AppTransformer::class);
+                    . get_class(). ' must be a sub-class of '. AppTransformer::class);
             }
             $paginator = $this->processor->processCollection($builder, $transformerClass);
             return $this->successResponse($this->convertPaginatorToArray($paginator, $apiResource));
@@ -46,17 +46,22 @@ class ApiResponser extends BaseApiResponser
     /**
      * @param \Illuminate\Database\Eloquent\Model  $instance
      * @param  string $apiResource
+     * @param  string $transformerClass
      * @param  int $code
      * @return  \Illuminate\Http\JsonResponse
      */
-    public function showInstance(Model $instance, string $apiResource = '', int $code = 200) : JsonResponse
+    public function showInstance(Model $instance, string $apiResource = '', string $transformerClass = '', int $code = 200) : JsonResponse
     {
         if (config('bkstar123_apibuddy.useTransform')) {
             if (!is_subclass_of($apiResource, AppResource::class)) {
                 throw new Exception('The second argument passed to the showInstance() method of the class '
-                          . get_class(). ' must be a sub-class of '. AppResource::class);
+                    . get_class(). ' must be a sub-class of '. AppResource::class);
             }
-            return $this->successResponse(new $apiResource($this->processor->processInstance($instance)), $code);
+            if (!is_subclass_of($transformerClass, AppTransformer::class)) {
+                throw new Exception('The third argument passed to the showInstance() method of the class '
+                    . get_class(). ' must be a sub-class of '. AppTransformer::class);
+            }
+            return $this->successResponse(new $apiResource($this->processor->processInstance($instance, $transformerClass)), $code);
         }
         return $this->successResponse($this->processor->processInstance($instance), $code);
     }

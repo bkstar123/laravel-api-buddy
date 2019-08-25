@@ -78,10 +78,11 @@ All API controllers extending ```ApiController``` have access to the property **
      *
      * @param  \Illuminate\Database\Eloquent\Model  $instance
      * @param  string $apiResource
+     * @param  string $transformerClass
      * @param  int $code
      * @return  \Illuminate\Http\JsonResponse
      */
-    public function showInstance(Model $instance, string $apiResource = '', int $code = 200) : JsonResponse;
+    public function showInstance(Model $instance, string $apiResource = '', string $transformerClass = '', int $code = 200) : JsonResponse;
 ```
 
 - **```showCollection()```**: is to return a collection of model resources in JSON with some features such as sorting, filtering, column selecting and paginating  
@@ -102,9 +103,8 @@ $eloquentBuilder = $post->tags()->getQuery();
 
 The following arguments are to be passed only in the case of using transformation:  
 - **```$apiResource```**: fully qualified class name of the model API resource. See more about API Resources at https://laravel.com/docs/5.8/eloquent-resources  
-- **```$transformerClass```**: the fully qualified class name of the model transforming class, such as ```App\Transformers\UserTransformer```. The transforming class must extend ```\Bkstar123\ApiBuddy\Transformers\AppTransformer``` and defined the following properties:  
-+) ```protected static $transformedKeys;```  
-+) ```protected static $originalKeys;```  
+- **```$transformerClass```**: the fully qualified class name of the model transforming class, such as ```App\Transformers\UserTransformer```. The transforming class must extend ```\Bkstar123\ApiBuddy\Transformers\AppTransformer``` and define the following property:  
++) ```protected static $transformedKeys;```    
 
 ### 4.2 Without transformation 
 
@@ -123,12 +123,12 @@ class UserController extends Controller
 {
     public function index()
     {
-    	return $this->apiResponser->showCollection(User::query());
+        return $this->apiResponser->showCollection(User::query());
     }
 
     public function showUser(User $user)
     {
-    	return $this->apiResponser->showInstance($user);
+        return $this->apiResponser->showInstance($user);
     }
 
     public function create(Request $request)
@@ -174,8 +174,8 @@ class UsersResource extends AppResource
         return [
             'fullname' => $this->name,
             'mailaddress' => $this->email,
-            'creationDate' => (string) $this->created_at,
-            'lastChanged' => (string) $this->updated_at,
+            'creationDate' => $this->created_at,
+            'lastChanged' => $this->updated_at,
         ];
     }
     ...
@@ -262,15 +262,15 @@ class UserController extends Controller
 
     public function index()
     {
-        $transformerClass = UserTransformer::class;
-        $apiResource = UsersResource::class;
-        return $this->apiResponser->showCollection(User::query(), $apiResource, $transformerClass);
+        return $this->apiResponser->showCollection(User::query(), UserResource::class, UserTransformer::class);
     }
 
     public function showUser(User $user)
     {
-        $apiResource = UsersResource::class;
-    	return $this->apiResponser->showInstance($user, $apiResource);
+        if (empty($user)) {
+            return $this->apiResponser->errorResponse('There is no resource of the given identificator', 404);
+        }
+        return $this->apiResponser->showInstance($user, UserResource::class, UserTransformer::class);
     }
 
     public function create(Request $request)
@@ -283,8 +283,7 @@ class UserController extends Controller
             'email.email' => 'The email must be valid'
         ]);
         $user = User::create($request->all());
-        $apiResource = UsersResource::class;
-        return $this->apiResponser->showInstance($user->fresh(), $apiResource, 201);
+        return $this->apiResponser->showInstance($user->fresh(), UsersResource::class, UserTransformer::class, 201);
     }
 }
 
@@ -305,7 +304,7 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
 {
-	...
+    ...
     /**
      * The application's route middleware groups.
      *

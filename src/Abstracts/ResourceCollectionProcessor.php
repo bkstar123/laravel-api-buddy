@@ -29,15 +29,12 @@ abstract class ResourceCollectionProcessor implements ResourceCollectionProcessa
 
     /**
      * @param  \Illuminate\Database\Eloquent\Model  $instance
+     * @param  string $transformerClass
      * @return  \Illuminate\Database\Eloquent\Model
      */
-    public function processInstance(Model $instance) : Model
+    public function processInstance(Model $instance, string $transformerClass = '') : Model
     {
-        if (config('bkstar123_apibuddy.useTransform')) {
-            return $instance;
-        }
-        $builder = $instance->query();
-        return $this->selectFields($builder)->where('id', $instance->id)->first();
+        return $this->selectFields($instance->query(), $transformerClass)->where('id', $instance->id)->first();
     }
 
     /**
