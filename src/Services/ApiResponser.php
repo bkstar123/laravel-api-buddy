@@ -36,7 +36,7 @@ class ApiResponser extends BaseApiResponser
                       . get_class(). ' must be a sub-class of '. AppTransformer::class);
             }
             $paginator = $this->processor->processCollection($builder, $transformerClass);
-            return $this->successResponse( $this->convertPaginatorToArray($paginator, $apiResource));
+            return $this->successResponse($this->convertPaginatorToArray($paginator, $apiResource));
         } else {
             $paginator = $this->processor->processCollection($builder);
             return $this->successResponse($this->convertPaginatorToArray($paginator));
