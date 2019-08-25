@@ -97,23 +97,23 @@ trait CollectionBasicHandling
 
     /**
      * @param  \Illuminate\Database\Eloquent\Builder  $builder
+     * @param  string $transformerClass
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function selectFields(Builder $builder) : Builder
+    public function selectFields(Builder $builder, string $transformerClass = '') : Builder
     {
-        if (!config('bkstar123_apibuddy.useTransform')) {
-            if (request()->method() === 'GET' && request()->filled('fields')) {
-                $fields = request()->input('fields');
-                $fields = explode(',', $fields);
-                $tableName = $this->getTableName($builder);
-                $tableColumns = $builder->getConnection()->getSchemaBuilder()->getColumnListing($tableName);
-                foreach ($fields as $field) {
-                    $field = trim($field);
-                    !in_array($field, $tableColumns) ?: $builder = $builder->addSelect($tableName . '.' . $field);
+        if (request()->method() === 'GET' && request()->filled('fields')) {
+            $fields = explode(',', request()->input('fields'));
+            $tableName = $this->getTableName($builder);
+            $tableColumns = $builder->getConnection()->getSchemaBuilder()->getColumnListing($tableName);
+            foreach ($fields as $field) {
+                $field = trim($field);
+                if (config('bkstar123_apibuddy.useTransform') && !empty($transformerClass)) {
+                    $field = $transformerClass::originalAttribute($field);
                 }
+                !in_array($field, $tableColumns) ?: $builder = $builder->addSelect($tableName . '.' . $field);
             }
         }
-        // In case of using transformation, field selection is done via the transformation
         return $builder;
     }
     

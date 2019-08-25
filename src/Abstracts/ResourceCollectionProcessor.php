@@ -23,7 +23,7 @@ abstract class ResourceCollectionProcessor implements ResourceCollectionProcessa
     {
         $builder = $this->filterData($builder, $transformerClass);
         $builder = $this->sortData($builder, $transformerClass);
-        $builder = $this->selectFields($builder);
+        $builder = $this->selectFields($builder, $transformerClass);
         return $this->paginateData($builder);
     }
 
@@ -56,9 +56,10 @@ abstract class ResourceCollectionProcessor implements ResourceCollectionProcessa
 
     /**
      * @param  \Illuminate\Database\Eloquent\Builder  $builder
+     * @param  string $transformerClass
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    abstract public function selectFields(Builder $builder) :Builder;
+    abstract public function selectFields(Builder $builder, string $transformerClass = '') :Builder;
 
     /**
      * @param  \Illuminate\Database\Eloquent\Builder  $builder

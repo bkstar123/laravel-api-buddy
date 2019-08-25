@@ -11,25 +11,18 @@ namespace Bkstar123\ApiBuddy\Traits;
 trait ResourceMappingFilter
 {
     /**
-     * Filter the mapping according to the fields given in the request
+     * Add filtering to transform only the keys available in the procied resources
      *
      * @param array  $mapping
      * @return array
      */
-    protected function filterMapping($mapping)
+    protected function filterMapping(array $mapping)
     {
-        if (request()->method() === 'GET' && request()->filled('fields')) {
-            $fields = request()->input('fields');
-            $fields = explode(',', $fields);
-            $fields = collect($fields)->filter(function ($field, $key) use ($mapping) {
-                return in_array($field, array_keys($mapping));
-            })->toArray();
-            if (!empty($fields)) {
-                foreach ($mapping as $key => $value) {
-                    if (!in_array($key, $fields)) {
-                        unset($mapping[$key]);
-                    }
-                }
+        foreach ($mapping as $key => $value) {
+            if (gettype($value) === 'object' && get_class($value) === 'Illuminate\Support\Carbon') {
+                $mapping[$key] = $this->when(isset($value), (string) $value);
+            } else {
+                $mapping[$key] = $this->when(isset($value), $value);
             }
         }
         return $mapping;
