@@ -21,8 +21,8 @@ abstract class ResourceCollectionProcessor implements ResourceCollectionProcessa
      */
     public function processCollection(Builder $builder, string $transformerClass = '') : LengthAwarePaginator
     {
-        $builder =  $this->filterData($builder, $transformerClass);
-        $builder =  $this->sortData($builder, $transformerClass);
+        $builder = $this->filterData($builder, $transformerClass);
+        $builder = $this->sortData($builder, $transformerClass);
         $builder = $this->selectFields($builder);
         return $this->paginateData($builder);
     }
